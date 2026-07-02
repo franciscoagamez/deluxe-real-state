@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { Collection } from '@/data/mockData';
 import CollectionCard from './ui/CollectionCard';
 import { createClient } from '@/lib/supabase/server';
+import { mapDatabaseProperty } from '@/lib/property-mapper';
 
 const FeaturedCollection = async () => {
   const supabase = await createClient();
@@ -12,7 +13,9 @@ const FeaturedCollection = async () => {
     .eq('is_featured', true)
     .limit(4);
 
-  const collections: Collection[] = (properties || []).map((p) => ({
+  const mappedProperties = (properties || []).map(mapDatabaseProperty);
+
+  const collections: (Collection & { slug: string })[] = mappedProperties.map((p) => ({
     id: p.id,
     title: p.title,
     location: p.location,
@@ -22,6 +25,7 @@ const FeaturedCollection = async () => {
     baths: p.baths,
     sqft: p.sqft,
     tag: p.is_new ? 'New Arrival' : 'Exclusive',
+    slug: p.slug || '',
   }));
 
   return (

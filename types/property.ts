@@ -13,4 +13,10 @@ export interface Property {
   is_new: boolean;
   created_at: string;
   is_featured?: boolean;
+  slug?: string;
+  images?: string[];
+  latitude?: number;
+  longitude?: number;
+  description?: string;
 }
+

@@ -2,7 +2,9 @@ import Navbar from '@/components/Navbar';
 import Hero from '@/components/Hero';
 import FeaturedCollection from '@/components/FeaturedCollection';
 import NewInMarket from '@/components/NewInMarket';
+import Footer from '@/components/Footer';
 import { createClient } from '@/lib/supabase/server';
+import { mapDatabaseProperty } from '@/lib/property-mapper';
 
 const PAGE_SIZE = 8;
 
@@ -24,6 +26,8 @@ export default async function Home({ searchParams }: HomePageProps) {
     .order('created_at', { ascending: false })
     .range(from, to);
 
+  const mappedProperties = (properties ?? []).map(mapDatabaseProperty);
+
   return (
     <>
       <Navbar />
@@ -31,12 +35,14 @@ export default async function Home({ searchParams }: HomePageProps) {
         <Hero />
         <FeaturedCollection />
         <NewInMarket
-          properties={properties ?? []}
+          properties={mappedProperties}
           totalCount={count ?? 0}
           currentPage={currentPage}
           pageSize={PAGE_SIZE}
         />
       </main>
+      <Footer />
     </>
   );
 }
+
