@@ -5,7 +5,7 @@ export interface Property {
   title: string;
   location: string;
   price: number;
-  image: string;
+  images: string[];
   beds: number;
   baths: number;
   sqft: number;
@@ -14,7 +14,6 @@ export interface Property {
   created_at: string;
   is_featured?: boolean;
   slug?: string;
-  images?: string[];
   latitude?: number;
   longitude?: number;
   description?: string;

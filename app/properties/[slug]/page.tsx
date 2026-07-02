@@ -40,7 +40,7 @@ export async function generateMetadata({ params }: PropertyDetailsPageProps): Pr
     openGraph: {
       title,
       description,
-      images: [{ url: property.image }],
+      images: [{ url: property.images[0] || '' }],
     },
   };
 }
@@ -109,7 +109,7 @@ export default async function PropertyDetailsPage({ params }: PropertyDetailsPag
           
           {/* Left Column (Gallery) */}
           <div className="lg:col-span-8 space-y-4">
-            <PropertyGallery images={property.images || []} title={property.title} />
+            <PropertyGallery images={property.images} title={property.title} />
           </div>
 
           {/* Right Column (Sidebar Box with Price, Agent & Map) */}

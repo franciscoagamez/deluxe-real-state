@@ -20,7 +20,7 @@ const FeaturedCollection = async () => {
     title: p.title,
     location: p.location,
     price: p.price,
-    image: p.image,
+    image: p.images[0] || '',
     beds: p.beds,
     baths: p.baths,
     sqft: p.sqft,
