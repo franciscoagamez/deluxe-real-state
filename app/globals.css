@@ -21,12 +21,71 @@
   --color-clear-day: var(--clear-day);
   --color-nordic-muted: var(--nordic-muted);
 
+  --color-primary: #006611;
+  --color-background-light: #f5f8f6;
+  --color-background-dark: #0f2312;
+
   --font-display: 'Inter', sans-serif;
 
   --shadow-soft: 0 10px 40px -10px rgba(0, 0, 0, 0.05);
   --shadow-card:
     0 4px 6px -1px rgba(0, 0, 0, 0.02), 0 2px 4px -1px rgba(0, 0, 0, 0.02);
 }
+
+/* Custom range slider styling */
+input[type=range] {
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+}
+
+input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 20px;
+  width: 20px;
+  border-radius: 50%;
+  background: #006611;
+  cursor: pointer;
+  box-shadow: 0 0 0 4px white;
+  border: 1px solid #e5e7eb;
+  transition: transform 0.1s ease;
+}
+
+input[type=range]::-webkit-slider-thumb:hover {
+  transform: scale(1.1);
+}
+
+input[type=range]::-moz-range-thumb {
+  height: 20px;
+  width: 20px;
+  border-radius: 50%;
+  background: #006611;
+  cursor: pointer;
+  box-shadow: 0 0 0 4px white;
+  border: 1px solid #e5e7eb;
+  transition: transform 0.1s ease;
+}
+
+input[type=range]::-moz-range-thumb:hover {
+  transform: scale(1.1);
+}
+
+/* Dual range slider: only thumbs are interactive, track doesn't block */
+.dual-range-input {
+  pointer-events: none;
+}
+.dual-range-input::-webkit-slider-thumb {
+  pointer-events: auto;
+  position: relative;
+  z-index: 1;
+}
+.dual-range-input::-moz-range-thumb {
+  pointer-events: auto;
+  position: relative;
+  z-index: 1;
+}
+
 
 body {
   background: var(--background);

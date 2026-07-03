@@ -11,7 +11,7 @@ const FeaturedCollection = async () => {
     .from('properties')
     .select('*')
     .eq('is_featured', true)
-    .limit(4);
+    .limit(2);
 
   const mappedProperties = (properties || []).map(mapDatabaseProperty);
 
