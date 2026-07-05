@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
+import { useTranslation } from '@/i18n/I18nProvider';
 
 const AMENITIES_LIST = [
   { name: 'Swimming Pool', icon: 'pool' },
@@ -13,7 +14,18 @@ const AMENITIES_LIST = [
   { name: 'Patio / Terrace', icon: 'deck' },
 ];
 
+const getAmenityKey = (name: string) => {
+  if (name === 'Swimming Pool') return 'pool';
+  if (name === 'Gym') return 'gym';
+  if (name === 'Parking') return 'parking';
+  if (name === 'Air Conditioning') return 'ac';
+  if (name === 'High-speed Wifi') return 'wifi';
+  if (name === 'Patio / Terrace') return 'patio';
+  return name.toLowerCase();
+};
+
 export default function SearchFilters() {
+  const { t } = useTranslation();
   const router = useRouter();
   const searchParams = useSearchParams();
   const pathname = usePathname();
@@ -260,13 +272,13 @@ export default function SearchFilters() {
           value={searchInput}
           onChange={(e) => setSearchInput(e.target.value)}
           className="block w-full pl-12 pr-28 py-4 rounded-xl border-none bg-white text-nordic shadow-soft placeholder-nordic-muted/60 focus:ring-2 focus:ring-mosque focus:bg-white transition-all text-lg"
-          placeholder="Search by city, neighborhood, or address..."
+          placeholder={t('filters.searchPlaceholder')}
         />
         <button
           type="submit"
           className="absolute inset-y-2 right-2 px-6 bg-mosque hover:bg-mosque/90 text-white font-medium rounded-lg transition-colors flex items-center justify-center shadow-lg shadow-mosque/20 cursor-pointer"
         >
-          Search
+          {t('filters.searchButton')}
         </button>
       </form>
 
@@ -283,7 +295,7 @@ export default function SearchFilters() {
                   : 'bg-white border border-nordic/5 text-nordic-muted hover:text-nordic hover:border-mosque/50 hover:bg-mosque/5'
               }`}
             >
-              All
+              {t('filters.allCategory')}
             </button>
             {['House', 'Apartment', 'Villa', 'Penthouse'].map((cat) => (
               <button
@@ -295,7 +307,7 @@ export default function SearchFilters() {
                     : 'bg-white border border-nordic/5 text-nordic-muted hover:text-nordic hover:border-mosque/50 hover:bg-mosque/5'
                 }`}
               >
-                {cat}
+                {t(`filters.propertyTypes.${cat.toLowerCase()}`)}
               </button>
             ))}
           </div>
@@ -306,7 +318,7 @@ export default function SearchFilters() {
           className="whitespace-nowrap flex items-center gap-1 px-4 py-2 rounded-full text-nordic hover:text-mosque font-medium text-sm hover:bg-black/5 transition-colors cursor-pointer shrink-0"
         >
           <span className="material-icons text-base font-material-icons">tune</span>
-          Filters
+          {t('filters.title')}
         </button>
       </div>
 
@@ -323,7 +335,7 @@ export default function SearchFilters() {
           <main className="relative z-20 w-full max-w-2xl bg-white dark:bg-gray-900 rounded-xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh] mx-4 animate-in fade-in zoom-in-95 duration-200">
             {/* Header */}
             <header className="px-8 py-6 border-b border-gray-100 dark:border-gray-800 flex justify-between items-center bg-white dark:bg-gray-900 sticky top-0 z-30">
-              <h1 className="text-2xl font-semibold tracking-tight text-gray-900 dark:text-white font-display">Filters</h1>
+              <h1 className="text-2xl font-semibold tracking-tight text-gray-900 dark:text-white font-display">{t('filters.title')}</h1>
               <button
                 onClick={() => setIsModalOpen(false)}
                 className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors text-gray-500 dark:text-gray-400 cursor-pointer"
@@ -336,14 +348,14 @@ export default function SearchFilters() {
             <div className="flex-1 overflow-y-auto no-scrollbar p-8 space-y-10">
               {/* Section 1: Location */}
               <section>
-                <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3">Location</label>
+                <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3">{t('filters.locationLabel')}</label>
                 <div className="relative group">
                   <span className="material-icons absolute left-4 top-3.5 text-gray-400 group-focus-within:text-primary transition-colors">location_on</span>
                   <input
                     value={tempLocation}
                     onChange={(e) => setTempLocation(e.target.value)}
                     className="w-full pl-12 pr-4 py-3 bg-background-light dark:bg-gray-800 border-0 rounded-lg text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-primary focus:bg-white dark:focus:bg-gray-800 transition-all shadow-sm focus:outline-none"
-                    placeholder="City, neighborhood, or address"
+                    placeholder={t('filters.locationPlaceholder')}
                     type="text"
                   />
                 </div>
@@ -352,7 +364,7 @@ export default function SearchFilters() {
               {/* Section 2: Price Range */}
               <section>
                 <div className="flex justify-between items-end mb-4">
-                  <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Price Range</label>
+                  <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('filters.priceRangeLabel')}</label>
                   <span className="text-sm font-medium text-primary">{formatPriceLabel(tempMinPrice, tempMaxPrice)}</span>
                 </div>
                 
@@ -398,7 +410,7 @@ export default function SearchFilters() {
 
                 <div className="grid grid-cols-2 gap-4">
                   <div className="bg-background-light dark:bg-gray-800 p-3 rounded-lg border border-transparent focus-within:border-primary/30 transition-colors">
-                    <label className="block text-[10px] text-gray-500 uppercase font-medium mb-1">Min Price</label>
+                    <label className="block text-[10px] text-gray-500 uppercase font-medium mb-1">{t('filters.minPrice')}</label>
                     <div className="flex items-center">
                       <span className="text-gray-400 mr-1">$</span>
                       <input
@@ -413,7 +425,7 @@ export default function SearchFilters() {
                     </div>
                   </div>
                   <div className="bg-background-light dark:bg-gray-800 p-3 rounded-lg border border-transparent focus-within:border-primary/30 transition-colors">
-                    <label className="block text-[10px] text-gray-500 uppercase font-medium mb-1">Max Price</label>
+                    <label className="block text-[10px] text-gray-500 uppercase font-medium mb-1">{t('filters.maxPrice')}</label>
                     <div className="flex items-center">
                       <span className="text-gray-400 mr-1">$</span>
                       <input
@@ -434,22 +446,22 @@ export default function SearchFilters() {
               <section className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 {/* Property Type */}
                 <div className="space-y-3">
-                  <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Property Type</label>
+                  <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('filters.propertyType')}</label>
                   <div className="relative">
                     <select
                       value={tempPropertyType}
                       onChange={(e) => setTempPropertyType(e.target.value)}
                       className="w-full bg-background-light dark:bg-gray-800 border-0 rounded-lg py-3 pl-4 pr-10 text-gray-900 dark:text-white appearance-none focus:ring-2 focus:ring-primary cursor-pointer focus:outline-none"
                     >
-                      <option>Any Type</option>
-                      <option>House</option>
-                      <option>Apartment</option>
-                      <option>Condo</option>
-                      <option>Townhouse</option>
-                      <option>Villa</option>
-                      <option>Penthouse</option>
-                      <option>Cabin</option>
-                      <option>Farmhouse</option>
+                      <option value="Any Type">{t('filters.propertyTypes.any')}</option>
+                      <option value="House">{t('filters.propertyTypes.house')}</option>
+                      <option value="Apartment">{t('filters.propertyTypes.apartment')}</option>
+                      <option value="Condo">{t('filters.propertyTypes.condo')}</option>
+                      <option value="Townhouse">{t('filters.propertyTypes.townhouse')}</option>
+                      <option value="Villa">{t('filters.propertyTypes.villa')}</option>
+                      <option value="Penthouse">{t('filters.propertyTypes.penthouse')}</option>
+                      <option value="Cabin">{t('filters.propertyTypes.cabin')}</option>
+                      <option value="Farmhouse">{t('filters.propertyTypes.farmhouse')}</option>
                     </select>
                     <span className="material-icons absolute right-3 top-3 text-gray-400 pointer-events-none">expand_more</span>
                   </div>
@@ -459,7 +471,7 @@ export default function SearchFilters() {
                 <div className="space-y-4">
                   {/* Beds */}
                   <div className="flex justify-between items-center">
-                    <span className="text-sm font-medium text-gray-900 dark:text-gray-100">Bedrooms</span>
+                    <span className="text-sm font-medium text-gray-900 dark:text-gray-100">{t('filters.rooms.bedrooms')}</span>
                     <div className="flex items-center space-x-3 bg-background-light dark:bg-gray-800 rounded-full p-1">
                       <button
                         type="button"
@@ -477,7 +489,7 @@ export default function SearchFilters() {
                         <span className="material-icons text-base">remove</span>
                       </button>
                       <span className="text-sm font-semibold w-8 text-center text-gray-900 dark:text-white">
-                        {tempBeds === 'any' ? 'Any' : tempBeds}
+                        {tempBeds === 'any' ? t('filters.rooms.any') : tempBeds}
                       </span>
                       <button
                         type="button"
@@ -497,7 +509,7 @@ export default function SearchFilters() {
 
                   {/* Baths */}
                   <div className="flex justify-between items-center">
-                    <span className="text-sm font-medium text-gray-900 dark:text-gray-100">Bathrooms</span>
+                    <span className="text-sm font-medium text-gray-900 dark:text-gray-100">{t('filters.rooms.bathrooms')}</span>
                     <div className="flex items-center space-x-3 bg-background-light dark:bg-gray-800 rounded-full p-1">
                       <button
                         type="button"
@@ -515,7 +527,7 @@ export default function SearchFilters() {
                         <span className="material-icons text-base">remove</span>
                       </button>
                       <span className="text-sm font-semibold w-8 text-center text-gray-900 dark:text-white">
-                        {tempBaths === 'any' ? 'Any' : tempBaths}
+                        {tempBaths === 'any' ? t('filters.rooms.any') : tempBaths}
                       </span>
                       <button
                         type="button"
@@ -537,7 +549,7 @@ export default function SearchFilters() {
 
               {/* Section 4: Amenities */}
               <section>
-                <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-4">Amenities &amp; Features</label>
+                <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-4">{t('filters.amenitiesLabel')}</label>
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                   {AMENITIES_LIST.map((am) => {
                     const isChecked = tempAmenities.includes(am.name);
@@ -559,7 +571,7 @@ export default function SearchFilters() {
                           <span className={`material-icons text-lg ${isChecked ? 'text-primary' : 'text-gray-400 group-hover:text-gray-500'}`}>
                             {am.icon}
                           </span>
-                          {am.name}
+                          {t(`filters.amenities.${getAmenityKey(am.name)}`)}
                         </div>
                         {isChecked && (
                           <div className="absolute top-2 right-2 w-2 h-2 bg-primary rounded-full"></div>
@@ -578,14 +590,14 @@ export default function SearchFilters() {
                 onClick={handleClearFilters}
                 className="text-sm font-medium text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-colors underline decoration-gray-300 underline-offset-4 cursor-pointer"
               >
-                Clear all filters
+                {t('filters.clearAll')}
               </button>
               <button
                 type="button"
                 onClick={handleApplyFilters}
                 className="bg-primary hover:bg-primary/90 text-white px-8 py-3 rounded-lg font-medium shadow-lg shadow-primary/30 transition-all hover:shadow-primary/40 flex items-center gap-2 transform active:scale-95 cursor-pointer"
               >
-                Show {matchCount} Homes
+                {t('filters.showHomes', { count: matchCount })}
                 <span className="material-icons text-sm">arrow_forward</span>
               </button>
             </footer>

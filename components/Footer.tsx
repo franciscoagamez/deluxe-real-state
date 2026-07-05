@@ -1,9 +1,13 @@
-const Footer = () => {
+import { getTranslationServer } from '@/i18n/server';
+
+const Footer = async () => {
+  const { t } = await getTranslationServer();
+
   return (
     <footer className="bg-white border-t border-slate-200 mt-12 py-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row justify-between items-center gap-6">
         <div className="text-sm text-nordic/50">
-          © {new Date().getFullYear()} LuxeEstate Inc. All rights reserved.
+          © {new Date().getFullYear()} LuxeEstate Inc. {t('footer.rights', { defaultValue: 'All rights reserved.' })}
         </div>
         <div className="flex gap-6">
           <a className="text-nordic/40 hover:text-mosque transition-colors" href="#" aria-label="Facebook">

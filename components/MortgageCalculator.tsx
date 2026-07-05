@@ -1,33 +1,28 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
+import { useTranslation } from '@/i18n/I18nProvider';
 
 interface MortgageCalculatorProps {
   propertyPrice: number;
 }
 
 export default function MortgageCalculator({ propertyPrice }: MortgageCalculatorProps) {
+  const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
   const [downPaymentPercent, setDownPaymentPercent] = useState(20);
   const [interestRate, setInterestRate] = useState(6.5);
   const [loanTerm, setLoanTerm] = useState(30);
-  const [monthlyPayment, setMonthlyPayment] = useState(0);
 
   // Calculations
-  useEffect(() => {
-    const principal = propertyPrice * (1 - downPaymentPercent / 100);
-    const monthlyRate = interestRate / 100 / 12;
-    const numberOfPayments = loanTerm * 12;
+  const principal = propertyPrice * (1 - downPaymentPercent / 100);
+  const monthlyRate = interestRate / 100 / 12;
+  const numberOfPayments = loanTerm * 12;
 
-    if (monthlyRate === 0) {
-      setMonthlyPayment(principal / numberOfPayments);
-    } else {
-      const payment = 
-        (principal * monthlyRate * Math.pow(1 + monthlyRate, numberOfPayments)) /
-        (Math.pow(1 + monthlyRate, numberOfPayments) - 1);
-      setMonthlyPayment(payment);
-    }
-  }, [propertyPrice, downPaymentPercent, interestRate, loanTerm]);
+  const monthlyPayment = monthlyRate === 0
+    ? (principal / numberOfPayments)
+    : ((principal * monthlyRate * Math.pow(1 + monthlyRate, numberOfPayments)) /
+       (Math.pow(1 + monthlyRate, numberOfPayments) - 1));
 
   const downPaymentAmount = propertyPrice * (downPaymentPercent / 100);
   const loanAmount = propertyPrice - downPaymentAmount;
@@ -41,13 +36,13 @@ export default function MortgageCalculator({ propertyPrice }: MortgageCalculator
             <span className="material-icons">calculate</span>
           </div>
           <div>
-            <h3 className="font-semibold text-nordic">Estimated Payment</h3>
+            <h3 className="font-semibold text-nordic">{t('property.estimatedPayment')}</h3>
             <p className="text-sm text-nordic/60">
-              Starting from{' '}
+              {t('property.startingFrom')}{' '}
               <strong className="text-mosque">
-                ${Math.round(monthlyPayment).toLocaleString()}/mo
+                ${Math.round(monthlyPayment).toLocaleString()}{t('property.perMonth')}
               </strong>{' '}
-              with {downPaymentPercent}% down
+              {t('property.withDown', { down: downPaymentPercent })}
             </p>
           </div>
         </div>
@@ -55,7 +50,7 @@ export default function MortgageCalculator({ propertyPrice }: MortgageCalculator
           onClick={() => setIsOpen(!isOpen)}
           className="whitespace-nowrap px-4 py-2 bg-white border border-nordic/10 rounded-lg text-sm font-semibold hover:border-mosque transition-colors text-nordic flex items-center gap-2 cursor-pointer shadow-xs"
         >
-          {isOpen ? 'Hide Calculator' : 'Calculate Mortgage'}
+          {isOpen ? t('property.hideCalculator') : t('property.calculateMortgage')}
           <span className="material-icons text-sm">
             {isOpen ? 'expand_less' : 'expand_more'}
           </span>
@@ -72,7 +67,7 @@ export default function MortgageCalculator({ propertyPrice }: MortgageCalculator
               {/* Down Payment slider */}
               <div>
                 <div className="flex justify-between text-sm font-medium text-nordic mb-1">
-                  <span>Down Payment ({downPaymentPercent}%)</span>
+                  <span>{t('property.downPayment')} ({downPaymentPercent}%)</span>
                   <span>${Math.round(downPaymentAmount).toLocaleString()}</span>
                 </div>
                 <input
@@ -89,7 +84,7 @@ export default function MortgageCalculator({ propertyPrice }: MortgageCalculator
               {/* Interest Rate slider */}
               <div>
                 <div className="flex justify-between text-sm font-medium text-nordic mb-1">
-                  <span>Interest Rate</span>
+                  <span>{t('property.interestRate')}</span>
                   <span>{interestRate}%</span>
                 </div>
                 <input
@@ -106,7 +101,7 @@ export default function MortgageCalculator({ propertyPrice }: MortgageCalculator
               {/* Loan Term Select */}
               <div>
                 <label className="block text-sm font-medium text-nordic mb-1">
-                  Loan Term
+                  {t('property.loanTerm')}
                 </label>
                 <div className="grid grid-cols-3 gap-2">
                   {[15, 20, 30].map((years) => (
@@ -120,7 +115,7 @@ export default function MortgageCalculator({ propertyPrice }: MortgageCalculator
                           : 'bg-white border-nordic/15 text-nordic/80 hover:border-mosque'
                       }`}
                     >
-                      {years} Years
+                      {years} {t('property.years')}
                     </button>
                   ))}
                 </div>
@@ -131,24 +126,24 @@ export default function MortgageCalculator({ propertyPrice }: MortgageCalculator
             <div className="bg-white p-5 rounded-lg border border-nordic/5 flex flex-col justify-between shadow-xs">
               <div className="space-y-3">
                 <div className="flex justify-between text-sm">
-                  <span className="text-nordic/60">Property Price:</span>
+                  <span className="text-nordic/60">{t('property.propertyPrice')}:</span>
                   <span className="font-semibold text-nordic">${propertyPrice.toLocaleString()}</span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-nordic/60">Down Payment Amount:</span>
+                  <span className="text-nordic/60">{t('property.downPaymentAmount')}:</span>
                   <span className="font-semibold text-nordic">${Math.round(downPaymentAmount).toLocaleString()}</span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-nordic/60">Loan Amount:</span>
+                  <span className="text-nordic/60">{t('property.loanAmount')}:</span>
                   <span className="font-semibold text-nordic">${Math.round(loanAmount).toLocaleString()}</span>
                 </div>
                 <div className="h-px bg-slate-100 my-2"></div>
               </div>
               <div className="pt-4">
-                <span className="text-xs uppercase tracking-wider text-nordic/50 block mb-1">Estimated Payment</span>
+                <span className="text-xs uppercase tracking-wider text-nordic/50 block mb-1">{t('property.estimatedPayment')}</span>
                 <span className="text-3xl font-bold text-mosque">
                   ${Math.round(monthlyPayment).toLocaleString()}
-                  <span className="text-sm font-normal text-nordic/60">/mo</span>
+                  <span className="text-sm font-normal text-nordic/60">{t('property.perMonth')}</span>
                 </span>
               </div>
             </div>

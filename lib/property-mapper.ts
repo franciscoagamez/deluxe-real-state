@@ -1,5 +1,6 @@
 import { Property } from '@/types/property';
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function mapDatabaseProperty(p: any): Property {
   if (!p) return {} as Property;
   const mainImage = p.image_url || p.image || '';

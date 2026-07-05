@@ -3,12 +3,15 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { Collection } from '@/data/mockData';
+import { useTranslation } from '@/i18n/I18nProvider';
 
 interface CollectionCardProps {
   collection: Collection & { slug?: string };
 }
 
 const CollectionCard = ({ collection }: CollectionCardProps) => {
+  const { t } = useTranslation();
+
   return (
     <Link href={`/properties/${collection.slug || collection.id}`} className="block h-full">
       <div className="group relative rounded-xl overflow-hidden shadow-soft bg-white cursor-pointer h-full">
@@ -69,19 +72,19 @@ const CollectionCard = ({ collection }: CollectionCardProps) => {
               <span className="material-icons text-lg font-material-icons">
                 king_bed
               </span>{' '}
-              {collection.beds} Beds
+              {collection.beds} {t('property.beds')}
             </div>
             <div className="flex items-center gap-2 text-nordic-muted text-sm">
               <span className="material-icons text-lg font-material-icons">
                 bathtub
               </span>{' '}
-              {collection.baths} Baths
+              {collection.baths} {t('property.baths')}
             </div>
             <div className="flex items-center gap-2 text-nordic-muted text-sm">
               <span className="material-icons text-lg font-material-icons">
                 square_foot
               </span>{' '}
-              {collection.sqft.toLocaleString()} m²
+              {collection.sqft.toLocaleString()} {t('property.sqft')}
             </div>
           </div>
         </div>

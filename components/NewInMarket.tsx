@@ -4,6 +4,7 @@ import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import PropertyCard from './ui/PropertyCard';
 import Pagination from './Pagination';
 import { Property } from '@/types/property';
+import { useTranslation } from '@/i18n/I18nProvider';
 
 interface NewInMarketProps {
   properties: Property[];
@@ -18,6 +19,7 @@ const NewInMarket = ({
   currentPage,
   pageSize,
 }: NewInMarketProps) => {
+  const { t } = useTranslation();
   const router = useRouter();
   const searchParams = useSearchParams();
   const pathname = usePathname();
@@ -40,9 +42,9 @@ const NewInMarket = ({
     <section>
       <div className="flex items-end justify-between mb-8">
         <div>
-          <h2 className="text-2xl font-light text-nordic">New in Market</h2>
+          <h2 className="text-2xl font-light text-nordic">{t('listings.newTitle')}</h2>
           <p className="text-nordic-muted mt-1 text-sm">
-            Fresh opportunities added this week.
+            {t('listings.newSub')}
           </p>
         </div>
         <div className="hidden md:flex bg-white p-1 rounded-lg">
@@ -54,7 +56,7 @@ const NewInMarket = ({
                 : 'text-nordic-muted hover:text-nordic'
             }`}
           >
-            All
+            {t('listings.all')}
           </button>
           <button
             onClick={() => handleSelectListingType('sale')}
@@ -64,7 +66,7 @@ const NewInMarket = ({
                 : 'text-nordic-muted hover:text-nordic'
             }`}
           >
-            Buy
+            {t('listings.buy')}
           </button>
           <button
             onClick={() => handleSelectListingType('rent')}
@@ -74,7 +76,7 @@ const NewInMarket = ({
                 : 'text-nordic-muted hover:text-nordic'
             }`}
           >
-            Rent
+            {t('listings.rent')}
           </button>
         </div>
       </div>
@@ -82,8 +84,8 @@ const NewInMarket = ({
       {properties.length === 0 ? (
         <div className="text-center py-16 bg-white rounded-xl border border-gray-100 shadow-soft">
           <span className="material-icons text-5xl text-nordic-muted/40 mb-3">home_work</span>
-          <p className="text-lg font-medium text-nordic">No properties found</p>
-          <p className="text-nordic-muted text-sm mt-1">Try adjusting your filters or search terms.</p>
+          <p className="text-lg font-medium text-nordic">{t('listings.noProperties')}</p>
+          <p className="text-nordic-muted text-sm mt-1">{t('listings.noPropertiesSub')}</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">

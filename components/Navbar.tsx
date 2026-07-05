@@ -1,7 +1,11 @@
 import Link from 'next/link';
 import Image from 'next/image';
+import { getTranslationServer } from '@/i18n/server';
+import LanguageSelector from './LanguageSelector';
 
-const Navbar = () => {
+const Navbar = async () => {
+  const { t } = await getTranslationServer();
+
   return (
     <nav className="sticky top-0 z-50 bg-clear-day/95 backdrop-blur-md border-b border-nordic/10">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -27,25 +31,25 @@ const Navbar = () => {
               href="#"
               className="text-mosque font-medium text-sm border-b-2 border-mosque px-1 py-1"
             >
-              Buy
+              {t('nav.buy')}
             </Link>
             <Link
               href="#"
               className="text-nordic/70 hover:text-nordic font-medium text-sm hover:border-b-2 hover:border-nordic/20 px-1 py-1 transition-all"
             >
-              Rent
+              {t('nav.rent')}
             </Link>
             <Link
               href="#"
               className="text-nordic/70 hover:text-nordic font-medium text-sm hover:border-b-2 hover:border-nordic/20 px-1 py-1 transition-all"
             >
-              Sell
+              {t('nav.sell')}
             </Link>
             <Link
               href="#"
               className="text-nordic/70 hover:text-nordic font-medium text-sm hover:border-b-2 hover:border-nordic/20 px-1 py-1 transition-all"
             >
-              Saved Homes
+              {t('nav.savedHomes')}
             </Link>
           </div>
 
@@ -61,15 +65,19 @@ const Navbar = () => {
               <span className="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full border-2 border-clear-day"></span>
             </button>
 
+            {/* Language Selector */}
+            <LanguageSelector />
+
             {/* Profile */}
-            <button className="flex items-center gap-2 pl-2 border-l border-nordic/10 ml-2">
-              <div className="w-9 h-9 rounded-full bg-gray-200 overflow-hidden ring-2 ring-transparent hover:ring-mosque transition-all relative">
-                <Image
-                  src="https://lh3.googleusercontent.com/aida-public/AB6AXuCAWhQZ663Bd08kmzjbOPmUk4UIxYooNONShMEFXLR-DtmVi6Oz-TiaY77SPwFk7g0OobkeZEOMvt6v29mSOD0Xm2g95WbBG3ZjWXmiABOUwGU0LOySRfVDo-JTXQ0-gtwjWxbmue0qDm91m-zEOEZwAW6iRFB1qC1bAU-wkjxm67Sbztq8w7srHkFT9bVEC86qG-FzhOBTomhAurNRmx9l8Yfqabk328NfdKuVLckgCdaPsNFE3yN65MeoRi05GA_gXIMwG4YDIeA"
-                  alt="Profile"
-                  fill
-                  className="object-cover"
-                />
+            <button className="flex items-center gap-2 pl-2 border-l border-nordic/10 ml-2 group">
+              <div className="w-9 h-9 rounded-full bg-gradient-to-br from-mosque/20 to-nordic/10 ring-2 ring-nordic/10 group-hover:ring-mosque/50 transition-all duration-300 flex items-center justify-center">
+                <svg
+                  className="w-5 h-5 text-mosque/70 group-hover:text-mosque transition-colors duration-300"
+                  fill="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
+                </svg>
               </div>
             </button>
           </div>
@@ -83,25 +91,25 @@ const Navbar = () => {
             href="#"
             className="block px-3 py-2 rounded-md text-base font-medium text-mosque bg-mosque/10"
           >
-            Buy
+            {t('nav.buy')}
           </Link>
           <Link
             href="#"
             className="block px-3 py-2 rounded-md text-base font-medium text-nordic hover:bg-black/5"
           >
-            Rent
+            {t('nav.rent')}
           </Link>
           <Link
             href="#"
             className="block px-3 py-2 rounded-md text-base font-medium text-nordic hover:bg-black/5"
           >
-            Sell
+            {t('nav.sell')}
           </Link>
           <Link
             href="#"
             className="block px-3 py-2 rounded-md text-base font-medium text-nordic hover:bg-black/5"
           >
-            Saved Homes
+            {t('nav.savedHomes')}
           </Link>
         </div>
       </div>

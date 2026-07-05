@@ -3,12 +3,15 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { Property } from '@/types/property';
+import { useTranslation } from '@/i18n/I18nProvider';
 
 interface PropertyCardProps {
   property: Property;
 }
 
 const PropertyCard = ({ property }: PropertyCardProps) => {
+  const { t } = useTranslation();
+
   return (
     <Link href={`/properties/${property.slug || property.id}`} className="block h-full">
       <article className="bg-white rounded-xl overflow-hidden shadow-card hover:shadow-soft transition-all duration-300 group cursor-pointer h-full flex flex-col">
@@ -39,7 +42,7 @@ const PropertyCard = ({ property }: PropertyCardProps) => {
           <div
             className={`absolute bottom-3 left-3 text-white text-xs font-bold px-2 py-1 rounded ${property.type === 'sale' ? 'bg-nordic/90' : 'bg-mosque/90'}`}
           >
-            {property.type === 'sale' ? 'FOR SALE' : 'FOR RENT'}
+            {property.type === 'sale' ? t('property.forSale') : t('property.forRent')}
           </div>
         </div>
 
@@ -49,7 +52,7 @@ const PropertyCard = ({ property }: PropertyCardProps) => {
             <h3 className="font-bold text-lg text-nordic">
               ${property.price.toLocaleString()}
               {property.type === 'rent' && (
-                <span className="text-sm font-normal text-nordic-muted">/mo</span>
+                <span className="text-sm font-normal text-nordic-muted">{t('property.perMonth')}</span>
               )}
             </h3>
           </div>
@@ -77,7 +80,7 @@ const PropertyCard = ({ property }: PropertyCardProps) => {
               <span className="material-icons text-sm text-mosque/80 font-material-icons">
                 square_foot
               </span>{' '}
-              {property.sqft}m²
+              {property.sqft}{t('property.sqft')}
             </div>
           </div>
         </div>

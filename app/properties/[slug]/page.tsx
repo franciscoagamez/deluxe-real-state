@@ -7,6 +7,7 @@ import Footer from '@/components/Footer';
 import PropertyGallery from '@/components/PropertyGallery';
 import MortgageCalculator from '@/components/MortgageCalculator';
 import PropertyMapWrapper from '@/components/PropertyMapWrapper';
+import { getTranslationServer } from '@/i18n/server';
 
 interface PropertyDetailsPageProps {
   params: Promise<{ slug: string }>;
@@ -16,6 +17,7 @@ interface PropertyDetailsPageProps {
 export async function generateMetadata({ params }: PropertyDetailsPageProps): Promise<Metadata> {
   const { slug } = await params;
   const supabase = await createClient();
+  const { t, dict } = await getTranslationServer();
   
   const { data: p } = await supabase
     .from('properties')
@@ -25,14 +27,25 @@ export async function generateMetadata({ params }: PropertyDetailsPageProps): Pr
 
   if (!p) {
     return {
-      title: 'Property Not Found | LuxeEstate',
+      title: t('property.notFound'),
     };
   }
 
   const property = mapDatabaseProperty(p);
+  const translated = dict.propertiesData?.[property.slug || ''];
+  if (translated) {
+    property.title = translated.title || property.title;
+    property.description = translated.description || property.description;
+    property.location = translated.location || property.location;
+  }
+
   const formattedPrice = property.price.toLocaleString();
+  const bedsLabel = property.beds === 1 ? t('property.bedsSingle') : t('property.beds');
+  const bathsLabel = property.baths === 1 ? t('property.bathsSingle') : t('property.baths');
+  const descPrefix = `${property.beds} ${bedsLabel}, ${property.baths} ${bathsLabel}`;
+  
   const title = `${property.title} | ${property.location} | LuxeEstate`;
-  const description = `${property.beds} Bed, ${property.baths} Bath luxury home in ${property.location} listed for $${formattedPrice}. ${property.description}`;
+  const description = `${descPrefix} | ${property.location} | $${formattedPrice}. ${property.description}`;
 
   return {
     title,
@@ -48,6 +61,7 @@ export async function generateMetadata({ params }: PropertyDetailsPageProps): Pr
 export default async function PropertyDetailsPage({ params }: PropertyDetailsPageProps) {
   const { slug } = await params;
   const supabase = await createClient();
+  const { t, dict } = await getTranslationServer();
 
   const { data: p } = await supabase
     .from('properties')
@@ -60,6 +74,12 @@ export default async function PropertyDetailsPage({ params }: PropertyDetailsPag
   }
 
   const property = mapDatabaseProperty(p);
+  const translated = dict.propertiesData?.[property.slug || ''];
+  if (translated) {
+    property.title = translated.title || property.title;
+    property.description = translated.description || property.description;
+    property.location = translated.location || property.location;
+  }
 
   // JSON-LD structured data for Schema.org SEO
   const jsonLd = {
@@ -125,7 +145,7 @@ export default async function PropertyDetailsPage({ params }: PropertyDetailsPag
                   <h1 className="text-4xl font-display font-light text-nordic mb-2">
                     ${property.price.toLocaleString()}
                     {property.type === 'rent' && (
-                      <span className="text-lg font-normal text-nordic-muted">/mo</span>
+                      <span className="text-lg font-normal text-nordic-muted">{t('property.perMonth')}</span>
                     )}
                   </h1>
                   <p className="text-nordic/60 font-medium flex items-center gap-1">
@@ -147,7 +167,7 @@ export default async function PropertyDetailsPage({ params }: PropertyDetailsPag
                     <h3 className="font-semibold text-nordic">Sarah Jenkins</h3>
                     <div className="flex items-center gap-1 text-xs text-mosque font-medium">
                       <span className="material-icons text-[14px]">star</span>
-                      <span>Top Rated Agent</span>
+                      <span>{t('property.topRatedAgent')}</span>
                     </div>
                   </div>
                   <div className="ml-auto flex gap-2">
@@ -164,11 +184,11 @@ export default async function PropertyDetailsPage({ params }: PropertyDetailsPag
                 <div className="space-y-3">
                   <button className="w-full bg-mosque hover:bg-primary-hover text-white py-4 px-6 rounded-lg font-medium transition-all shadow-lg shadow-mosque/20 flex items-center justify-center gap-2 group cursor-pointer">
                     <span className="material-icons text-xl group-hover:scale-110 transition-transform">calendar_today</span>
-                    Schedule Visit
+                    {t('details.scheduleVisit')}
                   </button>
                   <button className="w-full bg-transparent border border-nordic/10 hover:border-mosque text-nordic/80 hover:text-mosque py-4 px-6 rounded-lg font-medium transition-all flex items-center justify-center gap-2 cursor-pointer">
                     <span className="material-icons text-xl">mail_outline</span>
-                    Contact Agent
+                    {t('details.contactAgent')}
                   </button>
                 </div>
               </div>
@@ -193,34 +213,34 @@ export default async function PropertyDetailsPage({ params }: PropertyDetailsPag
             
             {/* Features Row */}
             <div className="bg-white p-8 rounded-xl shadow-sm border border-mosque/5">
-              <h2 className="text-lg font-semibold mb-6 text-nordic">Property Features</h2>
+              <h2 className="text-lg font-semibold mb-6 text-nordic">{t('details.propertyFeatures')}</h2>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
                 <div className="flex flex-col items-center justify-center p-4 bg-mosque/5 rounded-lg border border-mosque/10">
                   <span className="material-icons text-mosque text-2xl mb-2">square_foot</span>
                   <span className="text-xl font-bold text-nordic">{property.sqft}</span>
-                  <span className="text-xs uppercase tracking-wider text-nordic/50">Square Meters</span>
+                  <span className="text-xs uppercase tracking-wider text-nordic/50">{t('details.squareMeters')}</span>
                 </div>
                 <div className="flex flex-col items-center justify-center p-4 bg-mosque/5 rounded-lg border border-mosque/10">
                   <span className="material-icons text-mosque text-2xl mb-2">bed</span>
                   <span className="text-xl font-bold text-nordic">{property.beds}</span>
-                  <span className="text-xs uppercase tracking-wider text-nordic/50">Bedrooms</span>
+                  <span className="text-xs uppercase tracking-wider text-nordic/50">{t('filters.rooms.bedrooms')}</span>
                 </div>
                 <div className="flex flex-col items-center justify-center p-4 bg-mosque/5 rounded-lg border border-mosque/10">
                   <span className="material-icons text-mosque text-2xl mb-2">shower</span>
                   <span className="text-xl font-bold text-nordic">{property.baths}</span>
-                  <span className="text-xs uppercase tracking-wider text-nordic/50">Bathrooms</span>
+                  <span className="text-xs uppercase tracking-wider text-nordic/50">{t('filters.rooms.bathrooms')}</span>
                 </div>
                 <div className="flex flex-col items-center justify-center p-4 bg-mosque/5 rounded-lg border border-mosque/10">
                   <span className="material-icons text-mosque text-2xl mb-2">directions_car</span>
                   <span className="text-xl font-bold text-nordic">2</span>
-                  <span className="text-xs uppercase tracking-wider text-nordic/50">Garage</span>
+                  <span className="text-xs uppercase tracking-wider text-nordic/50">{t('details.garage')}</span>
                 </div>
               </div>
             </div>
 
             {/* Description Section */}
             <div className="bg-white p-8 rounded-xl shadow-sm border border-mosque/5">
-              <h2 className="text-lg font-semibold mb-4 text-nordic">About this home</h2>
+              <h2 className="text-lg font-semibold mb-4 text-nordic">{t('details.aboutHome')}</h2>
               <div className="prose prose-slate max-w-none text-nordic/70 leading-relaxed">
                 <p>
                   {property.description || 'Experience luxury living at its finest. This thoughtfully designed residence offers open-concept living spaces, premium finishes, and exceptional comfort in a highly desirable neighborhood. Built with a perfect blend of style and functionality.'}
@@ -230,31 +250,31 @@ export default async function PropertyDetailsPage({ params }: PropertyDetailsPag
 
             {/* Amenities Section */}
             <div className="bg-white p-8 rounded-xl shadow-sm border border-mosque/5">
-              <h2 className="text-lg font-semibold mb-6 text-nordic">Amenities</h2>
+              <h2 className="text-lg font-semibold mb-6 text-nordic">{t('details.amenities')}</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-4 gap-x-8">
                 <div className="flex items-center gap-3 text-nordic/70">
                   <span className="material-icons text-mosque/60 text-sm">check_circle</span>
-                  <span>Smart Home System</span>
+                  <span>{t('details.smartHome')}</span>
                 </div>
                 <div className="flex items-center gap-3 text-nordic/70">
                   <span className="material-icons text-mosque/60 text-sm">check_circle</span>
-                  <span>Swimming Pool</span>
+                  <span>{t('details.pool')}</span>
                 </div>
                 <div className="flex items-center gap-3 text-nordic/70">
                   <span className="material-icons text-mosque/60 text-sm">check_circle</span>
-                  <span>Central Heating &amp; Cooling</span>
+                  <span>{t('details.heatingCooling')}</span>
                 </div>
                 <div className="flex items-center gap-3 text-nordic/70">
                   <span className="material-icons text-mosque/60 text-sm">check_circle</span>
-                  <span>Electric Vehicle Charging</span>
+                  <span>{t('details.evCharging')}</span>
                 </div>
                 <div className="flex items-center gap-3 text-nordic/70">
                   <span className="material-icons text-mosque/60 text-sm">check_circle</span>
-                  <span>Private Gym</span>
+                  <span>{t('details.gym')}</span>
                 </div>
                 <div className="flex items-center gap-3 text-nordic/70">
                   <span className="material-icons text-mosque/60 text-sm">check_circle</span>
-                  <span>Wine Cellar</span>
+                  <span>{t('details.wineCellar')}</span>
                 </div>
               </div>
             </div>

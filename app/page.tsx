@@ -5,6 +5,7 @@ import NewInMarket from '@/components/NewInMarket';
 import Footer from '@/components/Footer';
 import { createClient } from '@/lib/supabase/server';
 import { mapDatabaseProperty } from '@/lib/property-mapper';
+import { getTranslationServer } from '@/i18n/server';
 
 const PAGE_SIZE = 8;
 
@@ -106,7 +107,18 @@ export default async function Home({ searchParams }: HomePageProps) {
     .order('created_at', { ascending: false })
     .range(from, to);
 
-  const mappedProperties = (properties ?? []).map(mapDatabaseProperty);
+  const { dict } = await getTranslationServer();
+
+  const mappedProperties = (properties ?? []).map((p) => {
+    const property = mapDatabaseProperty(p);
+    const translated = dict.propertiesData?.[property.slug || ''];
+    if (translated) {
+      property.title = translated.title || property.title;
+      property.description = translated.description || property.description;
+      property.location = translated.location || property.location;
+    }
+    return property;
+  });
 
   const hasActiveFilters = !!(
     location ||
