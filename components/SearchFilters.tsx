@@ -42,8 +42,8 @@ export default function SearchFilters() {
   // Format price helper
   const formatPriceLabel = (min: number, max: number) => {
     const format = (val: number) => {
-      if (val >= 1000000) return `$${(val / 1000000).toFixed(1)}M`;
-      if (val >= 1000) return `$${(val / 1000).toFixed(0)}k`;
+      if (val >= 1000000) return `$${(val / 1000000).toFixed(1).replace('.0', '')}M`;
+      if (val >= 1000) return `$${(val / 1000).toFixed(1).replace('.0', '')}k`;
       return `$${val}`;
     };
     return `${format(min)} – ${format(max)}`;
@@ -51,9 +51,13 @@ export default function SearchFilters() {
 
   // Sync temporary state with URL when opening the modal
   const openModal = () => {
+    const isRent = searchParams.get('listingType') === 'rent';
+    const minLimit = isRent ? 1000 : 100000;
+    const maxLimit = isRent ? 15000 : 10000000;
+
     setTempLocation(searchParams.get('location') || '');
-    setTempMinPrice(Number(searchParams.get('minPrice')) || 1200000);
-    setTempMaxPrice(Number(searchParams.get('maxPrice')) || 4500000);
+    setTempMinPrice(Number(searchParams.get('minPrice')) || minLimit);
+    setTempMaxPrice(Number(searchParams.get('maxPrice')) || maxLimit);
     setTempPropertyType(searchParams.get('propertyType') || 'Any Type');
     // Normalize: strip legacy '+' suffix from URL params
     const urlBeds = searchParams.get('beds') || 'any';
@@ -174,9 +178,13 @@ export default function SearchFilters() {
 
   // Clear All Filters
   const handleClearFilters = () => {
+    const isRent = searchParams.get('listingType') === 'rent';
+    const minLimit = isRent ? 1000 : 100000;
+    const maxLimit = isRent ? 15000 : 10000000;
+
     setTempLocation('');
-    setTempMinPrice(100000);
-    setTempMaxPrice(10000000);
+    setTempMinPrice(minLimit);
+    setTempMaxPrice(maxLimit);
     setTempPropertyType('Any Type');
     setTempBeds('any');
     setTempBaths('any');
@@ -227,9 +235,16 @@ export default function SearchFilters() {
     router.push(`${pathname}?${params.toString()}`);
   };
 
+  // Dynamic price limits based on listingType
+  const currentListingType = searchParams.get('listingType') || 'all';
+  const isRent = currentListingType === 'rent';
+  const minLimit = isRent ? 1000 : 100000;
+  const maxLimit = isRent ? 15000 : 10000000;
+  const priceStep = isRent ? 250 : 50000;
+
   // Calculation for price range slider track percentages
-  const minPercent = ((tempMinPrice - 100000) / (10000000 - 100000)) * 100;
-  const maxPercent = ((tempMaxPrice - 100000) / (10000000 - 100000)) * 100;
+  const minPercent = ((tempMinPrice - minLimit) / (maxLimit - minLimit)) * 100;
+  const maxPercent = ((tempMaxPrice - minLimit) / (maxLimit - minLimit)) * 100;
 
   return (
     <div className="max-w-2xl mx-auto space-y-8">
@@ -356,12 +371,12 @@ export default function SearchFilters() {
                   {/* Min price slider — pointer-events only on thumb */}
                   <input
                     type="range"
-                    min="100000"
-                    max="10000000"
-                    step="50000"
+                    min={minLimit}
+                    max={maxLimit}
+                    step={priceStep}
                     value={tempMinPrice}
                     onChange={(e) => {
-                      const val = Math.min(Number(e.target.value), tempMaxPrice - 100000);
+                      const val = Math.min(Number(e.target.value), tempMaxPrice - priceStep);
                       setTempMinPrice(val);
                     }}
                     className="dual-range-input absolute left-0 right-0 w-full h-1 appearance-none bg-transparent outline-none pointer-events-none z-20"
@@ -369,12 +384,12 @@ export default function SearchFilters() {
                   {/* Max price slider — pointer-events only on thumb */}
                   <input
                     type="range"
-                    min="100000"
-                    max="10000000"
-                    step="50000"
+                    min={minLimit}
+                    max={maxLimit}
+                    step={priceStep}
                     value={tempMaxPrice}
                     onChange={(e) => {
-                      const val = Math.max(Number(e.target.value), tempMinPrice + 100000);
+                      const val = Math.max(Number(e.target.value), tempMinPrice + priceStep);
                       setTempMaxPrice(val);
                     }}
                     className="dual-range-input absolute left-0 right-0 w-full h-1 appearance-none bg-transparent outline-none pointer-events-none z-20"
@@ -391,7 +406,7 @@ export default function SearchFilters() {
                         type="number"
                         value={tempMinPrice}
                         onChange={(e) => {
-                          const val = Math.max(0, Math.min(Number(e.target.value), tempMaxPrice - 10000));
+                          const val = Math.max(minLimit, Math.min(Number(e.target.value), tempMaxPrice - priceStep));
                           setTempMinPrice(val);
                         }}
                       />
@@ -406,7 +421,7 @@ export default function SearchFilters() {
                         type="number"
                         value={tempMaxPrice}
                         onChange={(e) => {
-                          const val = Math.max(tempMinPrice + 10000, Number(e.target.value));
+                          const val = Math.max(tempMinPrice + priceStep, Math.min(maxLimit, Number(e.target.value)));
                           setTempMaxPrice(val);
                         }}
                       />
