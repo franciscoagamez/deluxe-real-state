@@ -2,9 +2,14 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { getTranslationServer } from '@/i18n/server';
 import LanguageSelector from './LanguageSelector';
+import NavbarProfile from './NavbarProfile';
+import { createClient } from '@/lib/supabase/server';
 
 const Navbar = async () => {
   const { t } = await getTranslationServer();
+
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
 
   return (
     <nav className="sticky top-0 z-50 bg-clear-day/95 backdrop-blur-md border-b border-nordic/10">
@@ -69,17 +74,7 @@ const Navbar = async () => {
             <LanguageSelector />
 
             {/* Profile */}
-            <button className="flex items-center gap-2 pl-2 border-l border-nordic/10 ml-2 group">
-              <div className="w-9 h-9 rounded-full bg-gradient-to-br from-mosque/20 to-nordic/10 ring-2 ring-nordic/10 group-hover:ring-mosque/50 transition-all duration-300 flex items-center justify-center">
-                <svg
-                  className="w-5 h-5 text-mosque/70 group-hover:text-mosque transition-colors duration-300"
-                  fill="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
-                </svg>
-              </div>
-            </button>
+            <NavbarProfile user={user} />
           </div>
         </div>
       </div>

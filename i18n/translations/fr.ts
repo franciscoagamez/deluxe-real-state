@@ -5,6 +5,7 @@ export const fr = {
     sell: 'Vendre',
     savedHomes: 'Favoris',
     search: 'Rechercher',
+    signIn: 'Se connecter',
   },
   hero: {
     titlePrefix: 'Trouvez votre ',
@@ -106,6 +107,20 @@ export const fr = {
     loanAmount: 'Montant du Prêt',
     years: 'Ans',
     aboutProperty: 'À propos de cette propriété',
+  },
+  login: {
+    title: 'Bienvenue chez LuxeEstate',
+    subtitle: 'Débloquez des propriétés exclusives dans le monde entier.',
+    continueGoogle: 'Continuer avec Google',
+    continueGitHub: 'Continuer avec GitHub',
+    noAccount: "Vous n'avez pas de compte ?",
+    signUpNote: "S'inscrire (La connexion sociale crée automatiquement votre compte)",
+    privacyPolicy: 'Politique de Confidentialité',
+    termsOfService: 'Conditions d\'Utilisation',
+    helpCenter: 'Centre d\'Aide',
+    signingIn: 'Connexion en cours...',
+    signOut: 'Se Déconnecter',
+    loggedInAs: 'Connecté en tant que',
   },
   propertiesData: {
     'bel-air-crest-villa': {

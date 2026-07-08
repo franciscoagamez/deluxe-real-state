@@ -5,6 +5,7 @@ export const es = {
     sell: 'Vender',
     savedHomes: 'Casas Guardadas',
     search: 'Buscar',
+    signIn: 'Iniciar Sesión',
   },
   hero: {
     titlePrefix: 'Encuentra tu ',
@@ -106,6 +107,20 @@ export const es = {
     loanAmount: 'Monto del Préstamo',
     years: 'Años',
     aboutProperty: 'Sobre esta propiedad',
+  },
+  login: {
+    title: 'Bienvenido a LuxeEstate',
+    subtitle: 'Desbloquea propiedades exclusivas en todo el mundo.',
+    continueGoogle: 'Continuar con Google',
+    continueGitHub: 'Continuar con GitHub',
+    noAccount: '¿No tienes una cuenta?',
+    signUpNote: 'Regístrate (El login social creará tu cuenta automáticamente)',
+    privacyPolicy: 'Política de Privacidad',
+    termsOfService: 'Términos de Servicio',
+    helpCenter: 'Centro de Ayuda',
+    signingIn: 'Iniciando sesión...',
+    signOut: 'Cerrar Sesión',
+    loggedInAs: 'Sesión iniciada como',
   },
   propertiesData: {
     'bel-air-crest-villa': {
