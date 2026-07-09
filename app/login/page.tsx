@@ -1,12 +1,23 @@
 'use client';
 
-import { useState } from 'react';
+import { Suspense, useState } from 'react';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import { useTranslation } from '@/i18n/I18nProvider';
 import { createClient } from '@/lib/supabase/client';
 
 export default function LoginPage() {
+  return (
+    <Suspense>
+      <LoginForm />
+    </Suspense>
+  );
+}
+
+function LoginForm() {
   const { t } = useTranslation();
+  const searchParams = useSearchParams();
+  const next = searchParams.get('next');
   const [loadingProvider, setLoadingProvider] = useState<'google' | 'github' | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
@@ -16,7 +27,7 @@ export default function LoginPage() {
     setLoadingProvider(provider);
     setErrorMsg(null);
     try {
-      const redirectUrl = `${window.location.origin}/auth/callback`;
+      const redirectUrl = `${window.location.origin}/auth/callback${next ? `?next=${encodeURIComponent(next)}` : ''}`;
       const { error } = await supabase.auth.signInWithOAuth({
         provider,
         options: {

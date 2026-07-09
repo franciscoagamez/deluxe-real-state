@@ -6,11 +6,13 @@ import { useSearchParams } from 'next/navigation';
 interface PaginationProps {
   currentPage: number;
   totalPages: number;
+  basePath?: string;
 }
 
 export default function Pagination({
   currentPage,
   totalPages,
+  basePath = '/',
 }: PaginationProps) {
   const searchParams = useSearchParams();
 
@@ -19,7 +21,7 @@ export default function Pagination({
   const buildHref = (page: number) => {
     const params = new URLSearchParams(searchParams.toString());
     params.set('page', String(page));
-    return `/?${params.toString()}`;
+    return `${basePath}?${params.toString()}`;
   };
 
   const pages = Array.from({ length: totalPages }, (_, i) => i + 1);

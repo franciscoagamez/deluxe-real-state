@@ -122,6 +122,29 @@ export const fr = {
     signOut: 'Se Déconnecter',
     loggedInAs: 'Connecté en tant que',
   },
+  admin: {
+    nav: {
+      properties: 'Propriétés',
+      users: 'Utilisateurs',
+    },
+    properties: {
+      title: 'Propriétés',
+      subtitle: 'Parcourez toutes les annonces de la plateforme.',
+      colDetails: 'Détails du bien',
+      colLocation: 'Emplacement',
+      colPrice: 'Prix',
+      beds: 'Chambres',
+      baths: 'Salles de bain',
+    },
+    users: {
+      title: 'Répertoire des utilisateurs',
+      subtitle: 'Consultez les utilisateurs et gérez leurs rôles d\'accès.',
+      roleUser: 'Utilisateur',
+      roleAdmin: 'Administrateur',
+      unnamed: 'Utilisateur sans nom',
+      cannotChangeSelf: 'Vous ne pouvez pas modifier votre propre rôle',
+    },
+  },
   propertiesData: {
     'bel-air-crest-villa': {
       title: 'Villa Bel Air Crest',

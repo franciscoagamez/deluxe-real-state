@@ -11,6 +11,18 @@ const Navbar = async () => {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
+  // NOTE: `user.role` is the Postgres/Supabase-internal role (always
+  // "authenticated"), NOT our app-level role -- must check `profiles` instead.
+  let isAdmin = false;
+  if (user) {
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', user.id)
+      .single();
+    isAdmin = profile?.role === 'admin';
+  }
+
   return (
     <nav className="sticky top-0 z-50 bg-clear-day/95 backdrop-blur-md border-b border-nordic/10">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -72,6 +84,17 @@ const Navbar = async () => {
 
             {/* Language Selector */}
             <LanguageSelector />
+
+            {/* Admin Dashboard Link */}
+            {isAdmin && (
+              <Link
+                href="/admin/properties"
+                className="hidden md:flex items-center text-nordic/70 hover:text-mosque transition-colors"
+                title="Admin Dashboard"
+              >
+                <span className="material-icons font-material-icons">shield</span>
+              </Link>
+            )}
 
             {/* Profile */}
             <NavbarProfile user={user} />
