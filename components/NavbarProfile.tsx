@@ -6,8 +6,10 @@ import { useRouter } from 'next/navigation';
 import { useTranslation } from '@/i18n/I18nProvider';
 import { createClient } from '@/lib/supabase/client';
 
+import type { User } from '@supabase/supabase-js';
+
 interface NavbarProfileProps {
-  user: any; // User object from Supabase (or null)
+  user: User | null;
 }
 
 export default function NavbarProfile({ user }: NavbarProfileProps) {
