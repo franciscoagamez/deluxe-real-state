@@ -36,6 +36,34 @@ interface GeoSuggestion {
   display_name: string;
   lat: string;
   lon: string;
+  address?: Record<string, string>;
+}
+
+function formatAddress(address: Record<string, string> | undefined, displayName: string): string {
+  if (!address) return displayName;
+  const road = address.road || address.pedestrian || address.suburb || '';
+  const houseNumber = address.house_number || '';
+  const city = address.city || address.town || address.village || address.suburb || '';
+  const state = address.state || '';
+  const postcode = address.postcode || '';
+  
+  let street = road;
+  if (houseNumber && street) {
+    street = `${houseNumber} ${street}`;
+  } else if (houseNumber) {
+    street = houseNumber;
+  }
+  
+  const parts = [];
+  if (street) parts.push(street);
+  if (city) parts.push(city);
+  if (state) parts.push(state);
+  if (postcode) parts.push(postcode);
+  
+  if (parts.length > 0) {
+    return parts.join(', ');
+  }
+  return displayName;
 }
 
 interface StepperProps {
@@ -175,6 +203,47 @@ export default function PropertyForm({ mode, propertyId, initialData }: Property
   }
 
   // --- Address autocomplete (OpenStreetMap Nominatim) ---------------------
+  async function fetchReverseGeocode(lat: number, lng: number, updateInput = true) {
+    setSearchingAddress(true);
+    try {
+      const res = await fetch(
+        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`
+      );
+      const data = await res.json();
+      const formatted = formatAddress(data.address, data.display_name) || `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
+      
+      setLatitude(lat.toFixed(6));
+      setLongitude(lng.toFixed(6));
+      if (updateInput) {
+        setLocation(formatted);
+      }
+    } catch (err) {
+      console.error('Reverse geocoding error:', err);
+      setLatitude(lat.toFixed(6));
+      setLongitude(lng.toFixed(6));
+    } finally {
+      setSearchingAddress(false);
+    }
+  }
+
+  const [locating, setLocating] = useState(false);
+
+  function handleLocateMe() {
+    if (!navigator.geolocation) return;
+    setLocating(true);
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const { latitude: userLat, longitude: userLng } = position.coords;
+        void fetchReverseGeocode(userLat, userLng, true);
+        setLocating(false);
+      },
+      (error) => {
+        console.error('Geolocation error:', error);
+        setLocating(false);
+      }
+    );
+  }
+
   function handleLocationChange(value: string) {
     setLocation(value);
     if (debounceRef.current) clearTimeout(debounceRef.current);
@@ -194,8 +263,12 @@ export default function PropertyForm({ mode, propertyId, initialData }: Property
           `https://nominatim.openstreetmap.org/search?format=json&addressdetails=1&countrycodes=us&limit=5&q=${encodeURIComponent(query)}`,
         );
         const data: GeoSuggestion[] = await res.json();
-        setSuggestions(Array.isArray(data) ? data : []);
-        setShowSuggestions(Array.isArray(data) && data.length > 0);
+        const formattedData = Array.isArray(data) ? data.map(item => ({
+          ...item,
+          display_name: formatAddress(item.address, item.display_name)
+        })) : [];
+        setSuggestions(formattedData);
+        setShowSuggestions(formattedData.length > 0);
       } catch {
         setSuggestions([]);
         setShowSuggestions(false);
@@ -606,13 +679,19 @@ export default function PropertyForm({ mode, propertyId, initialData }: Property
                       if (suggestions.length > 0) setShowSuggestions(true);
                     }}
                     placeholder={t('admin.properties.form.addressPlaceholder')}
-                    className="w-full px-4 py-2.5 pr-9 rounded-md border border-gray-200 dark:border-primary/20 bg-white dark:bg-background-dark text-nordic dark:text-white placeholder-gray-400 focus:ring-1 focus:ring-mosque focus:border-mosque transition-all text-sm"
+                    className="w-full pl-4 pr-10 py-2.5 rounded-md border border-gray-200 dark:border-primary/20 bg-white dark:bg-background-dark text-nordic dark:text-white placeholder-gray-400 focus:ring-1 focus:ring-mosque focus:border-mosque transition-all text-sm"
                   />
-                  {searchingAddress && (
-                    <span className="material-icons absolute right-3 top-1/2 -translate-y-1/2 text-mosque dark:text-primary text-lg animate-spin pointer-events-none">
-                      progress_activity
+                  <button
+                    type="button"
+                    onClick={handleLocateMe}
+                    disabled={locating || searchingAddress}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-mosque dark:hover:text-primary transition-colors flex items-center justify-center cursor-pointer disabled:opacity-50"
+                    title="Usar mi ubicación actual"
+                  >
+                    <span className={`material-icons text-lg ${locating || searchingAddress ? 'animate-spin' : ''}`}>
+                      {locating || searchingAddress ? 'progress_activity' : 'my_location'}
                     </span>
-                  )}
+                  </button>
                   {showSuggestions && suggestions.length > 0 && (
                     <ul className="absolute left-0 right-0 z-[1000] mt-1 max-h-60 overflow-y-auto rounded-md border border-gray-200 dark:border-primary/20 bg-white dark:bg-[#152e2a] shadow-lg text-sm">
                       {suggestions.map((s) => (
@@ -664,7 +743,15 @@ export default function PropertyForm({ mode, propertyId, initialData }: Property
               </div>
               {hasCoordinates ? (
                 <div className="rounded-lg overflow-hidden border border-gray-200 dark:border-primary/20">
-                  <PropertyMapWrapper latitude={lat} longitude={lng} title={title || 'Property'} location={location} />
+                  <PropertyMapWrapper
+                    latitude={lat}
+                    longitude={lng}
+                    title={title || 'Property'}
+                    location={location}
+                    onChange={(newLat, newLng) => {
+                      void fetchReverseGeocode(newLat, newLng, true);
+                    }}
+                  />
                 </div>
               ) : (
                 <div className="relative h-48 w-full rounded-lg overflow-hidden bg-gray-100 dark:bg-background-dark border border-gray-200 dark:border-primary/20 flex items-center justify-center">

@@ -65,6 +65,31 @@
         label, button, input, select, textarea {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
         }
+        
+        /* Leaflet Premium Styles Overrides */
+        .leaflet-popup-content-wrapper {
+            background: #ffffff;
+            color: #19322F;
+            border-radius: 12px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+            padding: 2px;
+            border: 1px solid rgba(25, 50, 47, 0.08);
+        }
+        .leaflet-popup-tip {
+            background: #ffffff;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+        .leaflet-popup-content {
+            margin: 8px 12px;
+            line-height: 1.4;
+        }
+        .leaflet-container a.leaflet-popup-close-button {
+            color: #9ca3af;
+            padding: 8px 8px 0 0;
+        }
+        .leaflet-container a.leaflet-popup-close-button:hover {
+            color: #19322F;
+        }
     </style>
 </head>
 <body class="bg-clear-day text-nordic min-h-screen selection:bg-hint-green selection:text-nordic">
@@ -246,7 +271,10 @@
 <div>
 <label class="block text-sm font-medium text-nordic mb-1.5 font-sf-pro" for="location">Dirección <span class="text-red-500">*</span></label>
 <div class="relative">
-<input class="w-full px-4 py-2.5 rounded-md border-gray-200 bg-white text-nordic placeholder-gray-400 focus:ring-1 focus:ring-mosque focus:border-mosque transition-all text-sm font-sf-pro" id="location" placeholder="Calle, Ciudad, Código Postal" type="text" autocomplete="off"/>
+<input class="w-full pl-4 pr-10 py-2.5 rounded-md border-gray-200 bg-white text-nordic placeholder-gray-400 focus:ring-1 focus:ring-mosque focus:border-mosque transition-all text-sm font-sf-pro" id="location" placeholder="Calle, Ciudad, Código Postal" type="text" autocomplete="off"/>
+<button type="button" id="btn-locate" class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-mosque transition-colors flex items-center justify-center cursor-pointer" title="Usar mi ubicación actual">
+<span class="material-icons text-lg">my_location</span>
+</button>
 <div id="suggestions-list" class="absolute left-0 right-0 z-[1000] mt-1 hidden max-h-60 overflow-y-auto rounded-md border border-gray-200 bg-white shadow-lg text-sm font-sf-pro"></div>
 </div>
 </div>
@@ -260,7 +288,7 @@
 <input class="w-full px-3 py-2 rounded border-gray-200 bg-gray-50 text-nordic focus:bg-white focus:ring-1 focus:ring-mosque focus:border-mosque transition-all text-sm font-sf-pro" id="longitude" placeholder="ej. -74.0078" type="number" step="any"/>
 </div>
 </div>
-<div id="map" class="h-48 w-full rounded-lg border border-gray-200 z-10"></div>
+<div id="map" class="h-64 w-full rounded-lg border border-gray-200 z-10"></div>
 </div>
 </div>
 <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden sticky top-24">
@@ -369,9 +397,17 @@ document.addEventListener("DOMContentLoaded", () => {
     const latInput = document.getElementById("latitude");
     const lngInput = document.getElementById("longitude");
     const titleInput = document.getElementById("title");
+    const btnLocate = document.getElementById("btn-locate");
 
-    // Initialize Map
-    const map = L.map('map').setView([currentLat, currentLng], defaultZoom);
+    // Initialize Map with zoom control disabled on top-left
+    const map = L.map('map', {
+        zoomControl: false
+    }).setView([currentLat, currentLng], defaultZoom);
+
+    // Add zoom control at bottom-right
+    L.control.zoom({
+        position: 'bottomright'
+    }).addTo(map);
 
     // Add OpenStreetMap tiles
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -393,6 +429,34 @@ document.addEventListener("DOMContentLoaded", () => {
             .replace(/'/g, "&#039;");
     }
 
+    // Helper to format Nominatim address into a clean, concise string
+    function formatAddress(address, displayName) {
+        if (!address) return displayName;
+        const road = address.road || address.pedestrian || address.suburb || '';
+        const houseNumber = address.house_number || '';
+        const city = address.city || address.town || address.village || address.suburb || '';
+        const state = address.state || '';
+        const postcode = address.postcode || '';
+        
+        let street = road;
+        if (houseNumber && street) {
+            street = `${houseNumber} ${street}`;
+        } else if (houseNumber) {
+            street = houseNumber;
+        }
+        
+        const parts = [];
+        if (street) parts.push(street);
+        if (city) parts.push(city);
+        if (state) parts.push(state);
+        if (postcode) parts.push(postcode);
+        
+        if (parts.length > 0) {
+            return parts.join(', ');
+        }
+        return displayName;
+    }
+
     // Function to update inputs and marker popup
     function updateLocationFields(lat, lng, addressVal, updateInput = true) {
         currentLat = parseFloat(lat);
@@ -408,7 +472,7 @@ document.addEventListener("DOMContentLoaded", () => {
         // Update marker position
         marker.setLatLng([currentLat, currentLng]);
         
-        // Update popup
+        // Update popup with autoPan options to prevent cutoff
         const propertyTitle = titleInput.value.trim() || "Nueva Propiedad";
         const addressText = locationInput.value.trim() || "Ubicación seleccionada";
         
@@ -417,7 +481,12 @@ document.addEventListener("DOMContentLoaded", () => {
                 <strong class="block text-sm font-bold text-mosque mb-1">${escapeHtml(propertyTitle)}</strong>
                 <span class="text-xs text-gray-500 font-sf-pro">${escapeHtml(addressText)}</span>
             </div>
-        `).openPopup();
+        `, {
+            autoPan: true,
+            autoPanPadding: L.point(15, 15),
+            closeButton: false,
+            offset: L.point(0, -8)
+        }).openPopup();
     }
 
     // Pre-fill with default values immediately on load (so inputs are never blank)
@@ -430,7 +499,13 @@ document.addEventListener("DOMContentLoaded", () => {
                 const lat = position.coords.latitude;
                 const lng = position.coords.longitude;
                 map.setView([lat, lng], defaultZoom);
-                fetchReverseGeocode(lat, lng);
+                const currentVal = locationInput.value.trim();
+                // Only overwrite if input is empty or has the default placeholder
+                if (!currentVal || currentVal === "Tribeca, New York, NY") {
+                    fetchReverseGeocode(lat, lng, true);
+                } else {
+                    fetchReverseGeocode(lat, lng, false);
+                }
             },
             (error) => {
                 console.log("Geolocation error or permission denied, using default coordinates.");
@@ -446,24 +521,24 @@ document.addEventListener("DOMContentLoaded", () => {
     // Marker Drag Event
     marker.on('dragend', function (e) {
         const position = marker.getLatLng();
-        fetchReverseGeocode(position.lat, position.lng);
+        fetchReverseGeocode(position.lat, position.lng, true);
     });
 
     // Map Click Event (allows user to click anywhere on map to set marker & resolve coordinates/address)
     map.on('click', function (e) {
-        fetchReverseGeocode(e.latlng.lat, e.latlng.lng);
+        fetchReverseGeocode(e.latlng.lat, e.latlng.lng, true);
     });
 
     // Reverse Geocoding helper
-    function fetchReverseGeocode(lat, lng) {
+    function fetchReverseGeocode(lat, lng, updateInput = true) {
         // Instantly update inputs with coordinates to make drag/click feel snappy
         updateLocationFields(lat, lng, null, false);
 
         fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`)
             .then(res => res.json())
             .then(data => {
-                const addressVal = data.display_name || `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
-                updateLocationFields(lat, lng, addressVal, true);
+                const addressVal = formatAddress(data.address, data.display_name) || `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
+                updateLocationFields(lat, lng, addressVal, updateInput);
             })
             .catch(err => {
                 console.error("Reverse geocoding error:", err);
@@ -483,18 +558,19 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         debounceTimer = setTimeout(() => {
-            fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=5`)
+            fetch(`https://nominatim.openstreetmap.org/search?format=json&addressdetails=1&q=${encodeURIComponent(query)}&limit=5`)
                 .then(res => res.json())
                 .then(data => {
                     suggestionsList.innerHTML = "";
                     if (data && data.length > 0) {
                         suggestionsList.classList.remove("hidden");
                         data.forEach(item => {
+                            const cleanAddress = formatAddress(item.address, item.display_name);
                             const option = document.createElement("div");
                             option.className = "px-4 py-2.5 hover:bg-hint-green/30 cursor-pointer transition-colors border-b border-gray-100 last:border-b-0 text-nordic text-xs sm:text-sm";
-                            option.textContent = item.display_name;
+                            option.textContent = cleanAddress;
                             option.addEventListener("click", () => {
-                                updateLocationFields(item.lat, item.lon, item.display_name, true);
+                                updateLocationFields(item.lat, item.lon, cleanAddress, true);
                                 map.setView([item.lat, item.lon], 15);
                                 suggestionsList.classList.add("hidden");
                             });
@@ -528,6 +604,41 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
+    // Locate Me Button handler
+    btnLocate.addEventListener("click", () => {
+        const icon = btnLocate.querySelector(".material-icons");
+        if (icon) {
+            icon.textContent = "hourglass_top";
+            icon.classList.add("animate-spin");
+        }
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    const lat = position.coords.latitude;
+                    const lng = position.coords.longitude;
+                    map.setView([lat, lng], 15);
+                    fetchReverseGeocode(lat, lng, true);
+                    if (icon) {
+                        icon.textContent = "my_location";
+                        icon.classList.remove("animate-spin");
+                    }
+                },
+                (error) => {
+                    console.error("Geolocation error:", error);
+                    if (icon) {
+                        icon.textContent = "my_location";
+                        icon.classList.remove("animate-spin");
+                    }
+                }
+            );
+        } else {
+            if (icon) {
+                icon.textContent = "my_location";
+                icon.classList.remove("animate-spin");
+            }
+        }
+    });
+
     // Handle Manual Lat/Lng Inputs change
     function handleManualCoordinateChange() {
         const latVal = parseFloat(latInput.value);
@@ -537,7 +648,7 @@ document.addEventListener("DOMContentLoaded", () => {
             currentLng = lngVal;
             marker.setLatLng([currentLat, currentLng]);
             map.setView([currentLat, currentLng], map.getZoom());
-            fetchReverseGeocode(currentLat, currentLng);
+            fetchReverseGeocode(currentLat, currentLng, true);
         }
     }
 

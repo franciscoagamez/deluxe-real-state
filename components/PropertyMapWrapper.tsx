@@ -19,6 +19,7 @@ interface PropertyMapWrapperProps {
   longitude: number;
   title: string;
   location: string;
+  onChange?: (lat: number, lng: number) => void;
 }
 
 export default function PropertyMapWrapper(props: PropertyMapWrapperProps) {
