@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { useTranslation } from '@/i18n/I18nProvider';
+import { translations } from '@/i18n/locales';
 
 const AMENITIES_LIST = [
   { name: 'Swimming Pool', icon: 'pool' },
@@ -25,13 +26,20 @@ const getAmenityKey = (name: string) => {
 };
 
 export default function SearchFilters() {
-  const { t } = useTranslation();
+  const { t, locale } = useTranslation();
   const router = useRouter();
   const searchParams = useSearchParams();
   const pathname = usePathname();
 
   // Search input state
-  const [searchInput, setSearchInput] = useState(searchParams.get('location') || '');
+  const urlLocation = searchParams.get('location') || '';
+  const [prevUrlLocation, setPrevUrlLocation] = useState(urlLocation);
+  const [searchInput, setSearchInput] = useState(urlLocation);
+
+  if (urlLocation !== prevUrlLocation) {
+    setPrevUrlLocation(urlLocation);
+    setSearchInput(urlLocation);
+  }
 
   // Modal visibility
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -81,19 +89,51 @@ export default function SearchFilters() {
     setIsModalOpen(true);
   };
 
+  // Automatically clear location search parameter if user clears the search input
+  useEffect(() => {
+    if (searchInput === '' && searchParams.has('location')) {
+      const params = new URLSearchParams(searchParams.toString());
+      params.delete('location');
+      params.set('page', '1');
+      router.push(`${pathname}?${params.toString()}`);
+    }
+  }, [searchInput, searchParams, pathname, router]);
+
+
+
   // Real-time Supabase count fetcher
   useEffect(() => {
     if (!isModalOpen) return;
 
     const fetchCount = async () => {
       try {
+        const dict = translations[locale];
+        const matchingSlugs: string[] = [];
+        if (tempLocation) {
+          const searchLower = tempLocation.toLowerCase();
+          if (dict.propertiesData) {
+            for (const [slug, data] of Object.entries(dict.propertiesData)) {
+              const titleMatch = data.title?.toLowerCase().includes(searchLower);
+              const locMatch = data.location?.toLowerCase().includes(searchLower);
+              if (titleMatch || locMatch) {
+                matchingSlugs.push(slug);
+              }
+            }
+          }
+        }
+
         const supabase = createClient();
         let query = supabase
           .from('properties')
           .select('id', { count: 'exact', head: true });
 
         if (tempLocation) {
-          query = query.ilike('location', `%${tempLocation}%`);
+          const sanitizedLocation = tempLocation.replace(/"/g, '\\"');
+          let orQuery = `title.ilike."%${sanitizedLocation}%",location.ilike."%${sanitizedLocation}%"`;
+          if (matchingSlugs.length > 0) {
+            orQuery += `,slug.in.(${matchingSlugs.join(',')})`;
+          }
+          query = query.or(orQuery);
         }
         
         // Convert prices to cents
@@ -120,17 +160,17 @@ export default function SearchFilters() {
         }
 
         if (tempAmenities.length > 0) {
-          for (const am of tempAmenities) {
-            let term = am.toLowerCase();
-            if (term === 'swimming pool') term = 'pool';
-            else if (term === 'gym') term = 'gym';
-            else if (term === 'parking') term = 'parking';
-            else if (term === 'air conditioning') term = 'conditioning';
-            else if (term === 'high-speed wifi') term = 'wifi';
-            else if (term === 'patio / terrace') term = 'patio';
-
-            query = query.ilike('description', `%${term}%`);
-          }
+          const list = tempAmenities.map((am) => {
+            const term = am.toLowerCase();
+            if (term === 'swimming pool') return 'pool';
+            if (term === 'gym') return 'gym';
+            if (term === 'parking') return 'parking';
+            if (term === 'air conditioning') return 'ac';
+            if (term === 'high-speed wifi') return 'wifi';
+            if (term === 'patio / terrace') return 'patio';
+            return term;
+          });
+          query = query.contains('amenities', list);
         }
 
         // Apply current active listingType parameter from URL if present
@@ -154,7 +194,7 @@ export default function SearchFilters() {
     }, 150);
 
     return () => clearTimeout(timer);
-  }, [isModalOpen, tempLocation, tempMinPrice, tempMaxPrice, tempPropertyType, tempBeds, tempBaths, tempAmenities, searchParams]);
+  }, [isModalOpen, tempLocation, tempMinPrice, tempMaxPrice, tempPropertyType, tempBeds, tempBaths, tempAmenities, searchParams, locale]);
 
   // Handle Quick Category Selection
   const handleSelectCategory = (type: string) => {

@@ -40,6 +40,22 @@ export default async function Home({ searchParams }: HomePageProps) {
   const from = (currentPage - 1) * PAGE_SIZE;
   const to = from + PAGE_SIZE - 1;
 
+  const { dict } = await getTranslationServer();
+
+  const matchingSlugs: string[] = [];
+  if (location) {
+    const searchLower = location.toLowerCase();
+    if (dict.propertiesData) {
+      for (const [slug, data] of Object.entries(dict.propertiesData)) {
+        const titleMatch = data.title?.toLowerCase().includes(searchLower);
+        const locMatch = data.location?.toLowerCase().includes(searchLower);
+        if (titleMatch || locMatch) {
+          matchingSlugs.push(slug);
+        }
+      }
+    }
+  }
+
   const supabase = await createClient();
 
   let query = supabase
@@ -49,7 +65,12 @@ export default async function Home({ searchParams }: HomePageProps) {
 
 
   if (location) {
-    query = query.ilike('location', `%${location}%`);
+    const sanitizedLocation = location.replace(/"/g, '\\"');
+    let orQuery = `title.ilike."%${sanitizedLocation}%",location.ilike."%${sanitizedLocation}%"`;
+    if (matchingSlugs.length > 0) {
+      orQuery += `,slug.in.(${matchingSlugs.join(',')})`;
+    }
+    query = query.or(orQuery);
   }
 
   // Convert prices to cents (stored as cents in Supabase)
@@ -91,25 +112,22 @@ export default async function Home({ searchParams }: HomePageProps) {
   }
 
   if (amenities) {
-    const list = amenities.split(',');
-    for (const am of list) {
-      let term = am.trim().toLowerCase();
-      if (term === 'swimming pool') term = 'pool';
-      else if (term === 'gym') term = 'gym';
-      else if (term === 'parking') term = 'parking';
-      else if (term === 'air conditioning') term = 'conditioning';
-      else if (term === 'high-speed wifi') term = 'wifi';
-      else if (term === 'patio / terrace') term = 'patio';
-
-      query = query.ilike('description', `%${term}%`);
-    }
+    const list = amenities.split(',').map((am) => {
+      const term = am.trim().toLowerCase();
+      if (term === 'swimming pool') return 'pool';
+      if (term === 'gym') return 'gym';
+      if (term === 'parking') return 'parking';
+      if (term === 'air conditioning') return 'ac';
+      if (term === 'high-speed wifi') return 'wifi';
+      if (term === 'patio / terrace') return 'patio';
+      return term;
+    });
+    query = query.contains('amenities', list);
   }
 
   const { data: properties, count } = await query
     .order('created_at', { ascending: false })
     .range(from, to);
-
-  const { dict } = await getTranslationServer();
 
   const mappedProperties = (properties ?? []).map((p) => {
     const property = mapDatabaseProperty(p);
