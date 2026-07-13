@@ -49,18 +49,6 @@ export default function RoleSelect({ userId, currentRole, isSelf, userEmail }: R
     });
   };
 
-  // Map database role + email to the visual sub-role to match the premium template exactly
-  const getSubRole = (r: UserRole, email: string | null): 'admin' | 'broker' | 'agent' | 'viewer' => {
-    if (r === 'admin') return 'admin';
-    if (!email) return 'agent';
-    const e = email.toLowerCase();
-    if (e.includes('miller') || e.includes('broker')) return 'broker';
-    if (e.includes('koval') || e.includes('viewer') || e.includes('anna.k')) return 'viewer';
-    return 'agent';
-  };
-
-  const activeSubRole = getSubRole(role, userEmail);
-
   return (
     <div className="relative w-full md:w-auto flex flex-col items-end" ref={dropdownRef}>
       <button
@@ -90,64 +78,32 @@ export default function RoleSelect({ userId, currentRole, isSelf, userEmail }: R
             <button
               onClick={() => handleRoleChange('admin')}
               className={`w-full group flex items-center px-4 py-3 text-xs text-left transition-colors cursor-pointer ${
-                activeSubRole === 'admin'
+                role === 'admin'
                   ? 'bg-white/20 font-medium text-white'
                   : 'text-white/70 hover:bg-white/10 hover:text-white'
               }`}
               role="menuitem"
             >
-              <span className={`material-icons text-sm mr-3 ${activeSubRole === 'admin' ? 'text-white' : 'text-white/50 group-hover:text-white'}`}>
+              <span className={`material-icons text-sm mr-3 ${role === 'admin' ? 'text-white' : 'text-white/50 group-hover:text-white'}`}>
                 shield
               </span>
               {t('admin.users.roleAdmin')}
             </button>
 
-            {/* Broker option */}
+            {/* User option */}
             <button
               onClick={() => handleRoleChange('user')}
               className={`w-full group flex items-center px-4 py-3 text-xs text-left transition-colors cursor-pointer ${
-                activeSubRole === 'broker'
+                role === 'user'
                   ? 'bg-white/20 font-medium text-white'
                   : 'text-white/70 hover:bg-white/10 hover:text-white'
               }`}
               role="menuitem"
             >
-              <span className={`material-icons text-sm mr-3 ${activeSubRole === 'broker' ? 'text-white' : 'text-white/50 group-hover:text-white'}`}>
-                business_center
+              <span className={`material-icons text-sm mr-3 ${role === 'user' ? 'text-white' : 'text-white/50 group-hover:text-white'}`}>
+                person
               </span>
-              {t('admin.users.roleBroker')}
-            </button>
-
-            {/* Agent option */}
-            <button
-              onClick={() => handleRoleChange('user')}
-              className={`w-full group flex items-center px-4 py-3 text-xs text-left transition-colors cursor-pointer ${
-                activeSubRole === 'agent'
-                  ? 'bg-white/20 font-medium text-white'
-                  : 'text-white/70 hover:bg-white/10 hover:text-white'
-              }`}
-              role="menuitem"
-            >
-              <span className={`material-icons text-sm mr-3 ${activeSubRole === 'agent' ? 'text-white' : 'text-white/50 group-hover:text-white'}`}>
-                support_agent
-              </span>
-              {t('admin.users.roleAgent')}
-            </button>
-
-            {/* Viewer option */}
-            <button
-              onClick={() => handleRoleChange('user')}
-              className={`w-full group flex items-center px-4 py-3 text-xs text-left transition-colors cursor-pointer ${
-                activeSubRole === 'viewer'
-                  ? 'bg-white/20 font-medium text-white'
-                  : 'text-white/70 hover:bg-white/10 hover:text-white'
-              }`}
-              role="menuitem"
-            >
-              <span className={`material-icons text-sm mr-3 ${activeSubRole === 'viewer' ? 'text-white' : 'text-white/50 group-hover:text-white'}`}>
-                visibility
-              </span>
-              {t('admin.users.roleViewer')}
+              {t('admin.users.roleUser')}
             </button>
 
             <div className="border-t border-white/10 my-1"></div>

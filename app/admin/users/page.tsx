@@ -39,7 +39,7 @@ export default async function AdminUsersPage({ searchParams }: AdminUsersPagePro
   // Apply Role Filter if any
   if (selectedRole === 'admin') {
     query = query.eq('role', 'admin');
-  } else if (selectedRole === 'agent' || selectedRole === 'broker' || selectedRole === 'viewer') {
+  } else if (selectedRole === 'user') {
     query = query.eq('role', 'user');
   }
 
@@ -85,7 +85,7 @@ export default async function AdminUsersPage({ searchParams }: AdminUsersPagePro
 
     if (email.includes('miller') || name.includes('sarah')) {
       return {
-        subRole: t('admin.users.roleBroker'),
+        subRole: t('admin.users.roleUser'),
         status: t('admin.users.statusActive'),
         statusKey: 'Active',
         properties: '24',
@@ -98,7 +98,7 @@ export default async function AdminUsersPage({ searchParams }: AdminUsersPagePro
     }
     if (email.includes('marcus') || name.includes('marcus')) {
       return {
-        subRole: t('admin.users.roleAgent'),
+        subRole: t('admin.users.roleUser'),
         status: t('admin.users.statusAway'),
         statusKey: 'Away',
         properties: '8',
@@ -124,7 +124,7 @@ export default async function AdminUsersPage({ searchParams }: AdminUsersPagePro
     }
     if (email.includes('koval') || name.includes('anna')) {
       return {
-        subRole: t('admin.users.roleViewer'),
+        subRole: t('admin.users.roleUser'),
         status: t('admin.users.statusInactive'),
         statusKey: 'Inactive',
         properties: '0',
@@ -139,14 +139,14 @@ export default async function AdminUsersPage({ searchParams }: AdminUsersPagePro
     // Dynamic fallbacks
     const isOdd = index % 2 === 1;
     return {
-      subRole: isAdmin ? t('admin.users.roleAdmin') : isOdd ? t('admin.users.roleBroker') : t('admin.users.roleAgent'),
+      subRole: isAdmin ? t('admin.users.roleAdmin') : t('admin.users.roleUser'),
       status: isOdd ? t('admin.users.statusAway') : t('admin.users.statusActive'),
       statusKey: isOdd ? 'Away' : 'Active',
       properties: isAdmin ? '-' : String((index * 7 + 3) % 20 + 2),
       performanceLabel: isAdmin ? t('admin.users.accessLevel') : t('admin.users.salesYtd'),
       performanceValue: isAdmin ? 'Level 3' : `$${((index * 1.2 + 0.5) % 5).toFixed(1)}M`,
       online: !isOdd,
-      badgeColor: isAdmin ? 'bg-nordic text-white' : isOdd ? 'bg-primary/10 text-primary' : 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300',
+      badgeColor: isAdmin ? 'bg-nordic text-white' : 'bg-primary/10 text-primary',
       avatar: profile.avatar_url || null
     };
   };
@@ -174,11 +174,8 @@ export default async function AdminUsersPage({ searchParams }: AdminUsersPagePro
         <Link href={buildTabHref(undefined)} className={getTabClass(undefined)}>
           {t('admin.users.allUsers')}
         </Link>
-        <Link href={buildTabHref('agent')} className={getTabClass('agent')}>
-          {t('admin.users.agents')}
-        </Link>
-        <Link href={buildTabHref('broker')} className={getTabClass('broker')}>
-          {t('admin.users.brokers')}
+        <Link href={buildTabHref('user')} className={getTabClass('user')}>
+          {t('admin.users.regularUsers')}
         </Link>
         <Link href={buildTabHref('admin')} className={getTabClass('admin')}>
           {t('admin.users.admins')}

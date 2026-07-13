@@ -3,6 +3,8 @@ import Link from 'next/link';
 import { createClient } from '@/lib/supabase/server';
 import { mapDatabaseProperty } from '@/lib/property-mapper';
 import { getTranslationServer } from '@/i18n/server';
+import DeletePropertyButton from '@/components/admin/DeletePropertyButton';
+import type { PropertyStatus } from '@/types/property';
 
 const PAGE_SIZE = 8;
 
@@ -20,22 +22,27 @@ export default async function AdminPropertiesPage({
   const to = from + PAGE_SIZE - 1;
 
   const supabase = await createClient();
-  const { data: properties, count } = await supabase
-    .from('properties')
-    .select('*', { count: 'exact' })
-    .order('created_at', { ascending: false })
-    .range(from, to);
+  const [{ data: properties, count }, { count: activeCount }, { count: pendingCount }] = await Promise.all([
+    supabase
+      .from('properties')
+      .select('*', { count: 'exact' })
+      .order('created_at', { ascending: false })
+      .range(from, to),
+    supabase.from('properties').select('id', { count: 'exact', head: true }).eq('status', 'active'),
+    supabase.from('properties').select('id', { count: 'exact', head: true }).eq('status', 'pending'),
+  ]);
 
   const mapped = (properties ?? []).map(mapDatabaseProperty);
+  const statusById = new Map<string, PropertyStatus>(
+    (properties ?? []).map((p) => [p.id, (p.status as PropertyStatus) ?? 'active']),
+  );
   const totalCount = count ?? 0;
+  const totalActive = activeCount ?? 0;
+  const totalPending = pendingCount ?? 0;
   const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE));
 
   const showingStart = totalCount === 0 ? 0 : from + 1;
   const showingEnd = Math.min(totalCount, to + 1);
-
-  // Stats overview calculations (simulated split of active/pending)
-  const pendingCount = totalCount > 0 ? 2 : 0;
-  const activeCount = Math.max(0, totalCount - pendingCount);
 
   const buildPageHref = (pageNumber: number) => {
     return `/admin/properties?page=${pageNumber}`;
@@ -55,11 +62,12 @@ export default async function AdminPropertiesPage({
           >
             <span className="material-icons text-base">filter_list</span> {t('admin.properties.filter')}
           </button>
-          <button
+          <Link
+            href="/admin/properties/new"
             className="bg-primary hover:bg-primary/90 text-white px-5 py-2.5 rounded-lg text-sm font-medium shadow-md shadow-primary/20 transition-all transform hover:-translate-y-0.5 inline-flex items-center gap-2 cursor-pointer"
           >
             <span className="material-icons text-base">add</span> {t('admin.properties.addNewProperty')}
-          </button>
+          </Link>
         </div>
       </div>
 
@@ -77,7 +85,7 @@ export default async function AdminPropertiesPage({
         <div className="bg-white dark:bg-[#152e2a] p-5 rounded-xl border border-primary/10 shadow-sm flex items-center justify-between">
           <div>
             <p className="text-sm font-medium text-gray-500 dark:text-gray-400">{t('admin.properties.activeProperties')}</p>
-            <p className="text-2xl font-bold text-nordic dark:text-white mt-1">{activeCount}</p>
+            <p className="text-2xl font-bold text-nordic dark:text-white mt-1">{totalActive}</p>
           </div>
           <div className="h-10 w-10 rounded-full bg-hint-of-green flex items-center justify-center text-primary">
             <span className="material-icons">check_circle</span>
@@ -86,7 +94,7 @@ export default async function AdminPropertiesPage({
         <div className="bg-white dark:bg-[#152e2a] p-5 rounded-xl border border-primary/10 shadow-sm flex items-center justify-between">
           <div>
             <p className="text-sm font-medium text-gray-500 dark:text-gray-400">{t('admin.properties.pendingSale')}</p>
-            <p className="text-2xl font-bold text-nordic dark:text-white mt-1">{pendingCount}</p>
+            <p className="text-2xl font-bold text-nordic dark:text-white mt-1">{totalPending}</p>
           </div>
           <div className="h-10 w-10 rounded-full bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center text-orange-600 dark:text-orange-400">
             <span className="material-icons">pending</span>
@@ -111,18 +119,15 @@ export default async function AdminPropertiesPage({
         )}
 
         {/* List Items */}
-        {mapped.map((property, index) => {
-          // Distribute status badges deterministically to match design screenshot
-          let status: 'Active' | 'Pending' | 'Sold' = 'Active';
-          if (index === 1 && currentPage === 1) status = 'Pending';
-          if (index === 3 && currentPage === 1) status = 'Sold';
+        {mapped.map((property) => {
+          const status = statusById.get(property.id) ?? 'active';
 
           const formattedPrice = property.price.toLocaleString();
-          
+
           // Subtext calculation
           let priceSubtext = '';
-          if (status === 'Sold') {
-            priceSubtext = `${t('admin.properties.sold')}: Oct 12, 2023`;
+          if (status === 'sold') {
+            priceSubtext = t('admin.properties.sold');
           } else if (property.type === 'rent') {
             priceSubtext = `${t('admin.properties.monthly')}: $${formattedPrice}`;
           } else {
@@ -184,19 +189,19 @@ export default async function AdminPropertiesPage({
 
               {/* Status */}
               <div className="col-span-6 md:col-span-2">
-                {status === 'Active' && (
+                {status === 'active' && (
                   <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-hint-of-green text-primary border border-primary/10">
                     <span className="w-1.5 h-1.5 rounded-full bg-primary mr-1.5"></span>
                     {t('admin.properties.active')}
                   </span>
                 )}
-                {status === 'Pending' && (
+                {status === 'pending' && (
                   <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300 border border-orange-200 dark:border-orange-800">
                     <span className="w-1.5 h-1.5 rounded-full bg-orange-500 mr-1.5"></span>
                     {t('admin.properties.pending')}
                   </span>
                 )}
-                {status === 'Sold' && (
+                {status === 'sold' && (
                   <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700">
                     <span className="w-1.5 h-1.5 rounded-full bg-gray-500 mr-1.5"></span>
                     {t('admin.properties.sold')}
@@ -206,18 +211,14 @@ export default async function AdminPropertiesPage({
 
               {/* Actions */}
               <div className="col-span-12 md:col-span-2 flex items-center justify-end gap-2">
-                <button
+                <Link
+                  href={`/admin/properties/${property.id}/edit`}
                   className="p-2 rounded-lg text-gray-400 hover:text-primary hover:bg-hint-of-green/30 transition-all cursor-pointer"
-                  title="Edit Property"
+                  title={t('admin.properties.editProperty')}
                 >
                   <span className="material-icons text-xl">edit</span>
-                </button>
-                <button
-                  className="p-2 rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all cursor-pointer"
-                  title="Delete Property"
-                >
-                  <span className="material-icons text-xl">delete_outline</span>
-                </button>
+                </Link>
+                <DeletePropertyButton propertyId={property.id} />
               </div>
             </div>
           );
