@@ -2,6 +2,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/server';
 import { mapDatabaseProperty } from '@/lib/property-mapper';
+import { getTranslationServer } from '@/i18n/server';
 
 const PAGE_SIZE = 8;
 
@@ -13,6 +14,7 @@ export default async function AdminPropertiesPage({
   searchParams,
 }: AdminPropertiesPageProps) {
   const { page } = await searchParams;
+  const { t } = await getTranslationServer();
   const currentPage = Math.max(1, parseInt(page ?? '1', 10));
   const from = (currentPage - 1) * PAGE_SIZE;
   const to = from + PAGE_SIZE - 1;
@@ -44,19 +46,19 @@ export default async function AdminPropertiesPage({
       {/* Header Section */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
         <div>
-          <h1 className="text-3xl font-bold text-nordic dark:text-white tracking-tight">My Properties</h1>
-          <p className="text-gray-500 dark:text-gray-400 mt-1">Manage your portfolio and track performance.</p>
+          <h1 className="text-3xl font-bold text-nordic dark:text-white tracking-tight">{t('admin.properties.myProperties')}</h1>
+          <p className="text-gray-500 dark:text-gray-400 mt-1">{t('admin.properties.subtitle')}</p>
         </div>
         <div className="flex items-center gap-3">
           <button
             className="bg-white dark:bg-[#152e2a] border border-gray-200 dark:border-primary/30 text-nordic dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-primary/10 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors shadow-sm inline-flex items-center gap-2 cursor-pointer"
           >
-            <span className="material-icons text-base">filter_list</span> Filter
+            <span className="material-icons text-base">filter_list</span> {t('admin.properties.filter')}
           </button>
           <button
             className="bg-primary hover:bg-primary/90 text-white px-5 py-2.5 rounded-lg text-sm font-medium shadow-md shadow-primary/20 transition-all transform hover:-translate-y-0.5 inline-flex items-center gap-2 cursor-pointer"
           >
-            <span className="material-icons text-base">add</span> Add New Property
+            <span className="material-icons text-base">add</span> {t('admin.properties.addNewProperty')}
           </button>
         </div>
       </div>
@@ -65,7 +67,7 @@ export default async function AdminPropertiesPage({
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-8">
         <div className="bg-white dark:bg-[#152e2a] p-5 rounded-xl border border-primary/10 shadow-sm flex items-center justify-between">
           <div>
-            <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Total Listings</p>
+            <p className="text-sm font-medium text-gray-500 dark:text-gray-400">{t('admin.properties.totalListings')}</p>
             <p className="text-2xl font-bold text-nordic dark:text-white mt-1">{totalCount}</p>
           </div>
           <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary">
@@ -74,7 +76,7 @@ export default async function AdminPropertiesPage({
         </div>
         <div className="bg-white dark:bg-[#152e2a] p-5 rounded-xl border border-primary/10 shadow-sm flex items-center justify-between">
           <div>
-            <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Active Properties</p>
+            <p className="text-sm font-medium text-gray-500 dark:text-gray-400">{t('admin.properties.activeProperties')}</p>
             <p className="text-2xl font-bold text-nordic dark:text-white mt-1">{activeCount}</p>
           </div>
           <div className="h-10 w-10 rounded-full bg-hint-of-green flex items-center justify-center text-primary">
@@ -83,7 +85,7 @@ export default async function AdminPropertiesPage({
         </div>
         <div className="bg-white dark:bg-[#152e2a] p-5 rounded-xl border border-primary/10 shadow-sm flex items-center justify-between">
           <div>
-            <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Pending Sale</p>
+            <p className="text-sm font-medium text-gray-500 dark:text-gray-400">{t('admin.properties.pendingSale')}</p>
             <p className="text-2xl font-bold text-nordic dark:text-white mt-1">{pendingCount}</p>
           </div>
           <div className="h-10 w-10 rounded-full bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center text-orange-600 dark:text-orange-400">
@@ -96,15 +98,15 @@ export default async function AdminPropertiesPage({
       <div className="bg-white dark:bg-[#152e2a] rounded-xl shadow-sm border border-gray-200 dark:border-primary/20 overflow-hidden">
         {/* Table Header (Desktop Only) */}
         <div className="hidden md:grid grid-cols-12 gap-4 px-6 py-4 bg-gray-50/50 dark:bg-primary/5 border-b border-gray-100 dark:border-primary/10 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-          <div className="col-span-6">Property Details</div>
-          <div className="col-span-2">Price</div>
-          <div className="col-span-2">Status</div>
-          <div className="col-span-2 text-right">Actions</div>
+          <div className="col-span-6">{t('admin.properties.colDetails')}</div>
+          <div className="col-span-2">{t('admin.properties.colPrice')}</div>
+          <div className="col-span-2">{t('admin.properties.colStatus')}</div>
+          <div className="col-span-2 text-right">{t('admin.properties.colActions')}</div>
         </div>
 
         {mapped.length === 0 && (
           <div className="px-6 py-10 text-center text-nordic-muted text-sm bg-white dark:bg-transparent">
-            No properties found in the database.
+            {t('admin.properties.noProperties')}
           </div>
         )}
 
@@ -120,13 +122,13 @@ export default async function AdminPropertiesPage({
           // Subtext calculation
           let priceSubtext = '';
           if (status === 'Sold') {
-            priceSubtext = 'Sold: Oct 12, 2023';
+            priceSubtext = `${t('admin.properties.sold')}: Oct 12, 2023`;
           } else if (property.type === 'rent') {
-            priceSubtext = `Monthly: $${formattedPrice}`;
+            priceSubtext = `${t('admin.properties.monthly')}: $${formattedPrice}`;
           } else {
             // Simulated estimated monthly payment
             const monthlyEst = Math.round(property.price * 0.0036);
-            priceSubtext = `Monthly: $${monthlyEst.toLocaleString()}`;
+            priceSubtext = `${t('admin.properties.monthly')}: $${monthlyEst.toLocaleString()}`;
           }
 
           return (
@@ -158,15 +160,15 @@ export default async function AdminPropertiesPage({
                   <p className="text-sm text-gray-500 dark:text-gray-400">{property.location}</p>
                   <div className="flex items-center gap-3 mt-1.5 text-xs text-gray-400 dark:text-gray-500">
                     <span className="flex items-center gap-1">
-                      <span className="material-icons text-[14px]">bed</span> {property.beds} Beds
+                      <span className="material-icons text-[14px]">bed</span> {property.beds} {t('property.beds')}
                     </span>
                     <span className="w-1 h-1 rounded-full bg-gray-300"></span>
                     <span className="flex items-center gap-1">
-                      <span className="material-icons text-[14px]">bathtub</span> {property.baths} Baths
+                      <span className="material-icons text-[14px]">bathtub</span> {property.baths} {t('property.baths')}
                     </span>
                     <span className="w-1 h-1 rounded-full bg-gray-300"></span>
                     <span>
-                      {property.sqft.toLocaleString()} {property.type === 'rent' ? 'm²' : 'sqft'}
+                      {property.sqft.toLocaleString()} {t('property.sqft')}
                     </span>
                   </div>
                 </div>
@@ -185,19 +187,19 @@ export default async function AdminPropertiesPage({
                 {status === 'Active' && (
                   <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-hint-of-green text-primary border border-primary/10">
                     <span className="w-1.5 h-1.5 rounded-full bg-primary mr-1.5"></span>
-                    Active
+                    {t('admin.properties.active')}
                   </span>
                 )}
                 {status === 'Pending' && (
                   <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300 border border-orange-200 dark:border-orange-800">
                     <span className="w-1.5 h-1.5 rounded-full bg-orange-500 mr-1.5"></span>
-                    Pending
+                    {t('admin.properties.pending')}
                   </span>
                 )}
                 {status === 'Sold' && (
                   <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700">
                     <span className="w-1.5 h-1.5 rounded-full bg-gray-500 mr-1.5"></span>
-                    Sold
+                    {t('admin.properties.sold')}
                   </span>
                 )}
               </div>
@@ -225,7 +227,11 @@ export default async function AdminPropertiesPage({
         {totalPages > 1 && (
           <div className="px-6 py-4 border-t border-gray-100 dark:border-primary/20 flex items-center justify-between bg-gray-50/50 dark:bg-primary/5">
             <div className="text-sm text-gray-500 dark:text-gray-400">
-              Showing <span className="font-medium text-nordic dark:text-white">{showingStart}</span> to <span className="font-medium text-nordic dark:text-white">{showingEnd}</span> of <span className="font-medium text-nordic dark:text-white">{totalCount}</span> results
+              {t('admin.properties.showingResults', {
+                start: showingStart,
+                end: showingEnd,
+                total: totalCount,
+              })}
             </div>
             <div className="flex gap-2">
               {currentPage > 1 ? (
@@ -233,11 +239,11 @@ export default async function AdminPropertiesPage({
                   href={buildPageHref(currentPage - 1)}
                   className="px-3 py-1 text-sm border border-gray-200 dark:border-primary/30 rounded-md text-gray-600 dark:text-gray-300 hover:bg-white dark:hover:bg-primary/20 transition-colors"
                 >
-                  Previous
+                  {t('admin.properties.previous')}
                 </Link>
               ) : (
                 <span className="px-3 py-1 text-sm border border-gray-100 dark:border-primary/10 rounded-md text-gray-300 bg-gray-50/50 cursor-not-allowed opacity-50">
-                  Previous
+                  {t('admin.properties.previous')}
                 </span>
               )}
               {currentPage < totalPages ? (
@@ -245,11 +251,11 @@ export default async function AdminPropertiesPage({
                   href={buildPageHref(currentPage + 1)}
                   className="px-3 py-1 text-sm border border-gray-200 dark:border-primary/30 rounded-md text-gray-600 dark:text-gray-300 hover:bg-white dark:hover:bg-primary/20 transition-colors"
                 >
-                  Next
+                  {t('admin.properties.next')}
                 </Link>
               ) : (
                 <span className="px-3 py-1 text-sm border border-gray-100 dark:border-primary/10 rounded-md text-gray-300 bg-gray-50/50 cursor-not-allowed opacity-50">
-                  Next
+                  {t('admin.properties.next')}
                 </span>
               )}
             </div>

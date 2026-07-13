@@ -77,7 +77,7 @@ export default function RoleSelect({ userId, currentRole, isSelf, userEmail }: R
             : 'border-nordic/10 bg-white text-nordic hover:bg-nordic hover:text-white dark:bg-gray-800 dark:text-white dark:border-gray-700 dark:hover:bg-nordic'
         }`}
       >
-        {isPending ? 'Updating...' : 'Change Role'}
+        {isPending ? t('admin.users.updating') : t('admin.users.changeRole')}
         <span className="material-icons text-[16px] ml-2">
           {isOpen ? 'expand_less' : 'expand_more'}
         </span>
@@ -99,7 +99,7 @@ export default function RoleSelect({ userId, currentRole, isSelf, userEmail }: R
               <span className={`material-icons text-sm mr-3 ${activeSubRole === 'admin' ? 'text-white' : 'text-white/50 group-hover:text-white'}`}>
                 shield
               </span>
-              Administrator
+              {t('admin.users.roleAdmin')}
             </button>
 
             {/* Broker option */}
@@ -115,7 +115,7 @@ export default function RoleSelect({ userId, currentRole, isSelf, userEmail }: R
               <span className={`material-icons text-sm mr-3 ${activeSubRole === 'broker' ? 'text-white' : 'text-white/50 group-hover:text-white'}`}>
                 business_center
               </span>
-              Senior Broker
+              {t('admin.users.roleBroker')}
             </button>
 
             {/* Agent option */}
@@ -131,7 +131,7 @@ export default function RoleSelect({ userId, currentRole, isSelf, userEmail }: R
               <span className={`material-icons text-sm mr-3 ${activeSubRole === 'agent' ? 'text-white' : 'text-white/50 group-hover:text-white'}`}>
                 support_agent
               </span>
-              Agent
+              {t('admin.users.roleAgent')}
             </button>
 
             {/* Viewer option */}
@@ -147,7 +147,7 @@ export default function RoleSelect({ userId, currentRole, isSelf, userEmail }: R
               <span className={`material-icons text-sm mr-3 ${activeSubRole === 'viewer' ? 'text-white' : 'text-white/50 group-hover:text-white'}`}>
                 visibility
               </span>
-              Viewer
+              {t('admin.users.roleViewer')}
             </button>
 
             <div className="border-t border-white/10 my-1"></div>
@@ -155,7 +155,7 @@ export default function RoleSelect({ userId, currentRole, isSelf, userEmail }: R
             {/* Suspend User option (Mock Action) */}
             <button
               onClick={() => {
-                alert('User suspension is mocked for this directory demonstration.');
+                alert(t('admin.users.suspensionMocked'));
                 setIsOpen(false);
               }}
               className="w-full group flex items-center px-4 py-3 text-xs text-left text-red-200 hover:bg-red-500/20 hover:text-red-100 transition-colors cursor-pointer"
@@ -164,7 +164,7 @@ export default function RoleSelect({ userId, currentRole, isSelf, userEmail }: R
               <span className="material-icons text-sm mr-3 text-red-300 group-hover:text-red-100">
                 block
               </span>
-              Suspend User
+              {t('admin.users.suspendUser')}
             </button>
           </div>
         </div>

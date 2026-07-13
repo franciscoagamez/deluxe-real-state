@@ -5,9 +5,10 @@ import { useState } from 'react';
 
 interface UserSearchInputProps {
   initialValue: string;
+  placeholder?: string;
 }
 
-export default function UserSearchInput({ initialValue }: UserSearchInputProps) {
+export default function UserSearchInput({ initialValue, placeholder = 'Search by name, email...' }: UserSearchInputProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [value, setValue] = useState(initialValue);
@@ -43,7 +44,7 @@ export default function UserSearchInput({ initialValue }: UserSearchInputProps) 
         value={value}
         onChange={(e) => setValue(e.target.value)}
         className="block w-full pl-10 pr-3 py-2.5 border-none rounded-lg bg-white dark:bg-gray-800 text-nordic dark:text-white shadow-soft placeholder-nordic/30 focus:ring-2 focus:ring-primary focus:bg-white transition-all text-sm outline-none"
-        placeholder="Search by name, email..."
+        placeholder={placeholder}
       />
     </form>
   );

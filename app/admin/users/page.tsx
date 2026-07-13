@@ -4,6 +4,7 @@ import { createAdminClient } from '@/lib/supabase/admin';
 import { mapDatabaseProfile } from '@/lib/profile-mapper';
 import RoleSelect from '@/components/admin/RoleSelect';
 import UserSearchInput from '@/components/admin/UserSearchInput';
+import { getTranslationServer } from '@/i18n/server';
 
 const PAGE_SIZE = 8;
 
@@ -13,6 +14,7 @@ interface AdminUsersPageProps {
 
 export default async function AdminUsersPage({ searchParams }: AdminUsersPageProps) {
   const { page, search, role: selectedRole } = await searchParams;
+  const { t } = await getTranslationServer();
   const currentPage = Math.max(1, parseInt(page ?? '1', 10));
   const from = (currentPage - 1) * PAGE_SIZE;
   const to = from + PAGE_SIZE - 1;
@@ -83,10 +85,11 @@ export default async function AdminUsersPage({ searchParams }: AdminUsersPagePro
 
     if (email.includes('miller') || name.includes('sarah')) {
       return {
-        subRole: 'Senior Broker',
-        status: 'Active',
+        subRole: t('admin.users.roleBroker'),
+        status: t('admin.users.statusActive'),
+        statusKey: 'Active',
         properties: '24',
-        performanceLabel: 'Sales (YTD)',
+        performanceLabel: t('admin.users.salesYtd'),
         performanceValue: '$4.2M',
         online: true,
         badgeColor: 'bg-primary/10 text-primary',
@@ -95,10 +98,11 @@ export default async function AdminUsersPage({ searchParams }: AdminUsersPagePro
     }
     if (email.includes('marcus') || name.includes('marcus')) {
       return {
-        subRole: 'Agent',
-        status: 'Away',
+        subRole: t('admin.users.roleAgent'),
+        status: t('admin.users.statusAway'),
+        statusKey: 'Away',
         properties: '8',
-        performanceLabel: 'Sales (YTD)',
+        performanceLabel: t('admin.users.salesYtd'),
         performanceValue: '$1.8M',
         online: false,
         badgeColor: 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300',
@@ -107,10 +111,11 @@ export default async function AdminUsersPage({ searchParams }: AdminUsersPagePro
     }
     if (isAdmin) {
       return {
-        subRole: 'Administrator',
-        status: 'Active',
+        subRole: t('admin.users.roleAdmin'),
+        status: t('admin.users.statusActive'),
+        statusKey: 'Active',
         properties: '-',
-        performanceLabel: 'Access Level',
+        performanceLabel: t('admin.users.accessLevel'),
         performanceValue: 'Level 5',
         online: true,
         badgeColor: 'bg-nordic text-white',
@@ -119,10 +124,11 @@ export default async function AdminUsersPage({ searchParams }: AdminUsersPagePro
     }
     if (email.includes('koval') || name.includes('anna')) {
       return {
-        subRole: 'Viewer',
-        status: 'Inactive',
+        subRole: t('admin.users.roleViewer'),
+        status: t('admin.users.statusInactive'),
+        statusKey: 'Inactive',
         properties: '0',
-        performanceLabel: 'Last Login',
+        performanceLabel: t('admin.users.lastLogin'),
         performanceValue: '2mo ago',
         online: false,
         badgeColor: 'bg-gray-100 text-gray-500 dark:bg-gray-700 dark:text-gray-400',
@@ -133,10 +139,11 @@ export default async function AdminUsersPage({ searchParams }: AdminUsersPagePro
     // Dynamic fallbacks
     const isOdd = index % 2 === 1;
     return {
-      subRole: isAdmin ? 'Administrator' : isOdd ? 'Senior Broker' : 'Agent',
-      status: isOdd ? 'Away' : 'Active',
+      subRole: isAdmin ? t('admin.users.roleAdmin') : isOdd ? t('admin.users.roleBroker') : t('admin.users.roleAgent'),
+      status: isOdd ? t('admin.users.statusAway') : t('admin.users.statusActive'),
+      statusKey: isOdd ? 'Away' : 'Active',
       properties: isAdmin ? '-' : String((index * 7 + 3) % 20 + 2),
-      performanceLabel: isAdmin ? 'Access Level' : 'Sales (YTD)',
+      performanceLabel: isAdmin ? t('admin.users.accessLevel') : t('admin.users.salesYtd'),
       performanceValue: isAdmin ? 'Level 3' : `$${((index * 1.2 + 0.5) % 5).toFixed(1)}M`,
       online: !isOdd,
       badgeColor: isAdmin ? 'bg-nordic text-white' : isOdd ? 'bg-primary/10 text-primary' : 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300',
@@ -149,16 +156,15 @@ export default async function AdminUsersPage({ searchParams }: AdminUsersPagePro
       {/* Header and Controls */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight text-nordic dark:text-white">User Directory</h1>
-          <p className="text-nordic/60 dark:text-gray-400 mt-1 text-sm">Manage user access and roles for your properties.</p>
+          <h1 className="text-3xl font-bold tracking-tight text-nordic dark:text-white">{t('admin.users.title')}</h1>
+          <p className="text-nordic/60 dark:text-gray-400 mt-1 text-sm">{t('admin.users.subtitle')}</p>
         </div>
         <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
-          <UserSearchInput initialValue={search ?? ''} />
+          <UserSearchInput initialValue={search ?? ''} placeholder={t('admin.users.searchPlaceholder')} />
           <button
-            className="inline-flex items-center justify-center px-4 py-2.5 border border-primary text-sm font-medium rounded-lg text-primary bg-transparent hover:bg-primary/5 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-colors whitespace-nowrap cursor-pointer"
+            className="bg-primary hover:bg-primary/90 text-white px-5 py-2.5 rounded-lg text-sm font-medium shadow-md shadow-primary/20 transition-all transform hover:-translate-y-0.5 inline-flex items-center gap-2 cursor-pointer whitespace-nowrap"
           >
-            <span className="material-icons text-lg mr-2">add</span>
-            Add User
+            <span className="material-icons text-base">add</span> {t('admin.users.addUser')}
           </button>
         </div>
       </div>
@@ -166,16 +172,16 @@ export default async function AdminUsersPage({ searchParams }: AdminUsersPagePro
       {/* Tabs */}
       <div className="mt-8 flex gap-6 border-b border-nordic/10 overflow-x-auto no-scrollbar">
         <Link href={buildTabHref(undefined)} className={getTabClass(undefined)}>
-          All Users
+          {t('admin.users.allUsers')}
         </Link>
         <Link href={buildTabHref('agent')} className={getTabClass('agent')}>
-          Agents
+          {t('admin.users.agents')}
         </Link>
         <Link href={buildTabHref('broker')} className={getTabClass('broker')}>
-          Brokers
+          {t('admin.users.brokers')}
         </Link>
         <Link href={buildTabHref('admin')} className={getTabClass('admin')}>
-          Admins
+          {t('admin.users.admins')}
         </Link>
       </div>
 
@@ -183,15 +189,15 @@ export default async function AdminUsersPage({ searchParams }: AdminUsersPagePro
       <div className="grow mt-8 space-y-4">
         {/* Table Header (Desktop Only) */}
         <div className="hidden md:grid grid-cols-12 gap-4 px-6 text-xs font-semibold uppercase tracking-wider text-nordic/50 mb-2">
-          <div className="col-span-4">User Details</div>
-          <div className="col-span-3">Role &amp; Status</div>
-          <div className="col-span-3">Performance</div>
-          <div className="col-span-2 text-right">Actions</div>
+          <div className="col-span-4">{t('admin.users.userDetails')}</div>
+          <div className="col-span-3">{t('admin.users.roleStatus')}</div>
+          <div className="col-span-3">{t('admin.users.performance')}</div>
+          <div className="col-span-2 text-right">{t('admin.users.actions')}</div>
         </div>
 
         {mapped.length === 0 && (
           <div className="bg-white rounded-xl p-10 text-center text-nordic/50 border border-nordic/10">
-            No users found matching the filters.
+            {t('admin.users.noUsers')}
           </div>
         )}
 
@@ -232,7 +238,7 @@ export default async function AdminUsersPage({ searchParams }: AdminUsersPagePro
                 </div>
                 <div className="ml-4 overflow-hidden">
                   <div className="text-sm font-bold text-nordic dark:text-white truncate">
-                    {profile.full_name || 'Unnamed User'}
+                    {profile.full_name || t('admin.users.unnamed')}
                   </div>
                   <div className="text-xs text-nordic/70 dark:text-gray-300 truncate">
                     {profile.email}
@@ -249,8 +255,8 @@ export default async function AdminUsersPage({ searchParams }: AdminUsersPagePro
                   {metrics.subRole}
                 </span>
                 <div className="flex items-center text-xs text-nordic/60 dark:text-gray-400">
-                  <span className={`material-icons text-[14px] mr-1 ${metrics.status === 'Active' ? 'text-primary' : metrics.status === 'Away' ? 'text-orange-400' : 'text-gray-400'}`}>
-                    {metrics.status === 'Active' ? 'check_circle' : metrics.status === 'Away' ? 'schedule' : 'remove_circle_outline'}
+                  <span className={`material-icons text-[14px] mr-1 ${metrics.statusKey === 'Active' ? 'text-primary' : metrics.statusKey === 'Away' ? 'text-orange-400' : 'text-gray-400'}`}>
+                    {metrics.statusKey === 'Active' ? 'check_circle' : metrics.statusKey === 'Away' ? 'schedule' : 'remove_circle_outline'}
                   </span>
                   {metrics.status}
                 </div>
@@ -259,7 +265,7 @@ export default async function AdminUsersPage({ searchParams }: AdminUsersPagePro
               {/* Performance Metrics */}
               <div className="col-span-12 md:col-span-3 w-full grid grid-cols-2 gap-4">
                 <div>
-                  <div className="text-[10px] uppercase tracking-wider text-nordic/50">Properties</div>
+                  <div className="text-[10px] uppercase tracking-wider text-nordic/50">{t('admin.users.propertiesCount')}</div>
                   <div className="text-sm font-semibold text-nordic dark:text-white">{metrics.properties}</div>
                 </div>
                 <div>
@@ -289,7 +295,11 @@ export default async function AdminUsersPage({ searchParams }: AdminUsersPagePro
             <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
               <div>
                 <p className="text-sm text-nordic/60 dark:text-gray-400">
-                  Showing <span className="font-medium text-nordic dark:text-white">{showingStart}</span> to <span className="font-medium text-nordic dark:text-white">{showingEnd}</span> of <span className="font-medium text-nordic dark:text-white">{totalItems}</span> users
+                  {t('admin.users.showingUsers', {
+                    start: showingStart,
+                    end: showingEnd,
+                    total: totalItems,
+                  })}
                 </p>
               </div>
               <div>
@@ -300,12 +310,12 @@ export default async function AdminUsersPage({ searchParams }: AdminUsersPagePro
                       href={buildPageHref(currentPage - 1)}
                       className="relative inline-flex items-center px-2 py-2 rounded-l-md text-sm font-medium text-nordic/50 hover:text-primary transition-colors"
                     >
-                      <span className="sr-only">Previous</span>
+                      <span className="sr-only">{t('admin.users.previous')}</span>
                       <span className="material-icons text-xl">chevron_left</span>
                     </Link>
                   ) : (
                     <span className="relative inline-flex items-center px-2 py-2 rounded-l-md text-sm font-medium text-nordic/20 cursor-not-allowed">
-                      <span className="sr-only">Previous</span>
+                      <span className="sr-only">{t('admin.users.previous')}</span>
                       <span className="material-icons text-xl">chevron_left</span>
                     </span>
                   )}
@@ -330,12 +340,12 @@ export default async function AdminUsersPage({ searchParams }: AdminUsersPagePro
                       href={buildPageHref(currentPage + 1)}
                       className="relative inline-flex items-center px-2 py-2 rounded-r-md text-sm font-medium text-nordic/50 hover:text-primary transition-colors"
                     >
-                      <span className="sr-only">Next</span>
+                      <span className="sr-only">{t('admin.users.next')}</span>
                       <span className="material-icons text-xl">chevron_right</span>
                     </Link>
                   ) : (
                     <span className="relative inline-flex items-center px-2 py-2 rounded-r-md text-sm font-medium text-nordic/20 cursor-not-allowed">
-                      <span className="sr-only">Next</span>
+                      <span className="sr-only">{t('admin.users.next')}</span>
                       <span className="material-icons text-xl">chevron_right</span>
                     </span>
                   )}
@@ -350,11 +360,11 @@ export default async function AdminUsersPage({ searchParams }: AdminUsersPagePro
                   href={buildPageHref(currentPage - 1)}
                   className="relative inline-flex items-center px-4 py-2 text-sm font-medium rounded-md text-nordic bg-white border border-gray-300 hover:bg-gray-50"
                 >
-                  Previous
+                  {t('admin.users.previous')}
                 </Link>
               ) : (
                 <span className="relative inline-flex items-center px-4 py-2 text-sm font-medium rounded-md text-gray-300 bg-gray-50 border border-gray-200 cursor-not-allowed">
-                  Previous
+                  {t('admin.users.previous')}
                 </span>
               )}
               {currentPage < totalPages ? (
@@ -362,11 +372,11 @@ export default async function AdminUsersPage({ searchParams }: AdminUsersPagePro
                   href={buildPageHref(currentPage + 1)}
                   className="ml-3 relative inline-flex items-center px-4 py-2 text-sm font-medium rounded-md text-nordic bg-white border border-gray-300 hover:bg-gray-50"
                 >
-                  Next
+                  {t('admin.users.next')}
                 </Link>
               ) : (
                 <span className="ml-3 relative inline-flex items-center px-4 py-2 text-sm font-medium rounded-md text-gray-300 bg-gray-50 border border-gray-200 cursor-not-allowed">
-                  Next
+                  {t('admin.users.next')}
                 </span>
               )}
             </div>

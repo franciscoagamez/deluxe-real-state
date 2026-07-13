@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { createClient } from '@/lib/supabase/server';
 import { getTranslationServer } from '@/i18n/server';
 import NavbarProfile from '@/components/NavbarProfile';
+import AdminNavbarLinks from './AdminNavbarLinks';
 
 export default async function AdminHeader() {
   const { t } = await getTranslationServer();
@@ -24,20 +25,10 @@ export default async function AdminHeader() {
               LuxeEstate
             </span>
           </Link>
-          <nav className="hidden md:flex gap-8">
-            <Link
-              href="/admin/properties"
-              className="text-sm font-medium text-nordic/70 hover:text-mosque transition-colors"
-            >
-              {t('admin.nav.properties')}
-            </Link>
-            <Link
-              href="/admin/users"
-              className="text-sm font-medium text-nordic/70 hover:text-mosque transition-colors"
-            >
-              {t('admin.nav.users')}
-            </Link>
-          </nav>
+          <AdminNavbarLinks
+            propertiesLabel={t('admin.nav.properties')}
+            usersLabel={t('admin.nav.users')}
+          />
         </div>
         <NavbarProfile user={user} />
       </div>
