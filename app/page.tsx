@@ -44,7 +44,9 @@ export default async function Home({ searchParams }: HomePageProps) {
 
   let query = supabase
     .from('properties')
-    .select('*', { count: 'exact' });
+    .select('*', { count: 'exact' })
+    .eq('status', 'active');
+
 
   if (location) {
     query = query.ilike('location', `%${location}%`);

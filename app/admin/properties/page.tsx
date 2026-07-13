@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { createClient } from '@/lib/supabase/server';
 import { mapDatabaseProperty } from '@/lib/property-mapper';
 import { getTranslationServer } from '@/i18n/server';
-import DeletePropertyButton from '@/components/admin/DeletePropertyButton';
+import PropertyActionButtons from '@/components/admin/PropertyActionButtons';
 import type { PropertyStatus } from '@/types/property';
 
 const PAGE_SIZE = 8;
@@ -22,7 +22,7 @@ export default async function AdminPropertiesPage({
   const to = from + PAGE_SIZE - 1;
 
   const supabase = await createClient();
-  const [{ data: properties, count }, { count: activeCount }, { count: pendingCount }] = await Promise.all([
+  const [{ data: properties, count }, { count: activeCount }, { count: pendingCount }, { count: inactiveCount }] = await Promise.all([
     supabase
       .from('properties')
       .select('*', { count: 'exact' })
@@ -30,6 +30,7 @@ export default async function AdminPropertiesPage({
       .range(from, to),
     supabase.from('properties').select('id', { count: 'exact', head: true }).eq('status', 'active'),
     supabase.from('properties').select('id', { count: 'exact', head: true }).eq('status', 'pending'),
+    supabase.from('properties').select('id', { count: 'exact', head: true }).eq('status', 'inactive'),
   ]);
 
   const mapped = (properties ?? []).map(mapDatabaseProperty);
@@ -39,6 +40,7 @@ export default async function AdminPropertiesPage({
   const totalCount = count ?? 0;
   const totalActive = activeCount ?? 0;
   const totalPending = pendingCount ?? 0;
+  const totalInactive = inactiveCount ?? 0;
   const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE));
 
   const showingStart = totalCount === 0 ? 0 : from + 1;
@@ -72,7 +74,7 @@ export default async function AdminPropertiesPage({
       </div>
 
       {/* Stats Overview */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-8">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-6 mb-8">
         <div className="bg-white dark:bg-[#152e2a] p-5 rounded-xl border border-primary/10 shadow-sm flex items-center justify-between">
           <div>
             <p className="text-sm font-medium text-gray-500 dark:text-gray-400">{t('admin.properties.totalListings')}</p>
@@ -98,6 +100,15 @@ export default async function AdminPropertiesPage({
           </div>
           <div className="h-10 w-10 rounded-full bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center text-orange-600 dark:text-orange-400">
             <span className="material-icons">pending</span>
+          </div>
+        </div>
+        <div className="bg-white dark:bg-[#152e2a] p-5 rounded-xl border border-primary/10 shadow-sm flex items-center justify-between">
+          <div>
+            <p className="text-sm font-medium text-gray-500 dark:text-gray-400">{t('admin.properties.inactiveProperties')}</p>
+            <p className="text-2xl font-bold text-nordic dark:text-white mt-1">{totalInactive}</p>
+          </div>
+          <div className="h-10 w-10 rounded-full bg-gray-100 dark:bg-gray-800/50 flex items-center justify-center text-gray-500 dark:text-gray-400">
+            <span className="material-icons">visibility_off</span>
           </div>
         </div>
       </div>
@@ -207,6 +218,12 @@ export default async function AdminPropertiesPage({
                     {t('admin.properties.sold')}
                   </span>
                 )}
+                {status === 'inactive' && (
+                  <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-800">
+                    <span className="w-1.5 h-1.5 rounded-full bg-red-500 mr-1.5"></span>
+                    {t('admin.properties.inactive')}
+                  </span>
+                )}
               </div>
 
               {/* Actions */}
@@ -218,7 +235,7 @@ export default async function AdminPropertiesPage({
                 >
                   <span className="material-icons text-xl">edit</span>
                 </Link>
-                <DeletePropertyButton propertyId={property.id} />
+                <PropertyActionButtons propertyId={property.id} status={status} />
               </div>
             </div>
           );

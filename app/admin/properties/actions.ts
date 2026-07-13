@@ -172,6 +172,41 @@ export async function deleteProperty(propertyId: string): Promise<DeleteResult> 
   return { success: true };
 }
 
+export async function deactivateProperty(propertyId: string): Promise<DeleteResult> {
+  const user = await getAdminUser();
+  if (!user) return { success: false, error: 'Forbidden.' };
+
+  const supabaseAdmin = createAdminClient();
+  const { error } = await supabaseAdmin
+    .from('properties')
+    .update({ status: 'inactive' })
+    .eq('id', propertyId);
+  if (error) {
+    return { success: false, error: error.message };
+  }
+
+  revalidatePath('/admin/properties');
+  return { success: true };
+}
+
+export async function reactivateProperty(propertyId: string): Promise<DeleteResult> {
+  const user = await getAdminUser();
+  if (!user) return { success: false, error: 'Forbidden.' };
+
+  const supabaseAdmin = createAdminClient();
+  const { error } = await supabaseAdmin
+    .from('properties')
+    .update({ status: 'active' })
+    .eq('id', propertyId);
+  if (error) {
+    return { success: false, error: error.message };
+  }
+
+  revalidatePath('/admin/properties');
+  return { success: true };
+}
+
+
 const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
 
 export async function uploadPropertyImages(formData: FormData): Promise<UploadResult> {

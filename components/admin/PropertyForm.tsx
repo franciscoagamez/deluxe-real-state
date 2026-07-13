@@ -487,6 +487,7 @@ export default function PropertyForm({ mode, propertyId, initialData }: Property
                     <option value="active">{t('admin.properties.active')}</option>
                     <option value="pending">{t('admin.properties.pending')}</option>
                     <option value="sold">{t('admin.properties.sold')}</option>
+                    <option value="inactive">{t('admin.properties.inactive')}</option>
                   </select>
                 </div>
                 <div>

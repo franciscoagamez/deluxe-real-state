@@ -69,9 +69,10 @@ export default async function PropertyDetailsPage({ params }: PropertyDetailsPag
     .eq('slug', slug)
     .single();
 
-  if (!p) {
+  if (!p || p.status === 'inactive') {
     notFound();
   }
+
 
   const property = mapDatabaseProperty(p);
   const translated = dict.propertiesData?.[property.slug || ''];

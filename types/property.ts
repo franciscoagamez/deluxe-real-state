@@ -34,7 +34,7 @@ export type PropertyTypeEnum =
   | 'townhouse'
   | 'cabin'
   | 'farmhouse';
-export type PropertyStatus = 'active' | 'pending' | 'sold';
+export type PropertyStatus = 'active' | 'pending' | 'sold' | 'inactive';
 
 export interface PropertyRow {
   id: string;
